@@ -1,7 +1,10 @@
-# A Winning Approach: Effective Training Tricks for Nuclear Segmentation, Classification, and Composition
+# Keep It Accurate and Robust: An Enhanced Nuclei Analysis Framework.
+
+## We'll have our code and data out in the open before 2024, Dec!  I'm scrambling to get it all sorted like a cat on a hot tin roof! 
+## It really takes time to be a new teacher in college. :(
 
 This repository contains PyTorch code for the paper:
-KA Winning Approach: Effective Training Tricks for Nuclear Segmentation, Classification, and Composition
+Keep It Accurate and Robust: An Enhanced Nuclei Analysis Framework.
 
 This paper presents a practical and innovative approach for nucleus recognition and cellular composition analysis. Our method utilizes a standard U-Net model but focuses on effective training and testing strategies instead of designing new models. The model outputs three maps where each pixel determines its nucleus and category independently, overcoming the challenge of overlapping nuclei. To achieve robust and generalizable results, we introduce practical model training tricks and model ensemble methods. These significantly enhance performance, reducing overfitting and improving applicability to new data. Our approach also addresses the scarcity of large annotated datasets by using diverse training data from five sources.
 
