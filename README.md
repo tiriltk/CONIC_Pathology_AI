@@ -1,5 +1,7 @@
 # Keep It Accurate and Robust: An Enhanced Nuclei Analysis Framework.
 
+# Team Pathology_AI in CONIC 2022! We win the first prize in the second task: Prediction of cellular composition, and the third prize in the first task: Nuclear segmentation and classification!
+
 This repository contains PyTorch code for the paper:
 Keep It Accurate and Robust: An Enhanced Nuclei Analysis Framework.
 
