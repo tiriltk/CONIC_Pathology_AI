@@ -368,7 +368,7 @@ class CoNICDatasetPanMon(torch.utils.data.Dataset):
                     "grid_distortion": A.GridDistortion(num_steps=aug_params['grid_distortion_num_steps'],
                                                         distort_limit=aug_params['grid_distortion_distort_limit'], p=0.8),
                     "grid_dropout": A.GridDropout(ratio=aug_params['grid_dropout_ratio'], p=0.8),
-                    "random_resizecrop": A.RandomResizedCrop(height=self.input_shape[0], width=self.input_shape[1], 
+                    "random_resizecrop": A.RandomResizedCrop(size=(self.input_shape[0], self.input_shape[1]), 
                                                             scale=(aug_params['random_resizecrop_min'], 1), 
                                                             ratio=(aug_params['random_resizecrop_ration_min'], aug_params['random_resizecrop_ration_max']),
                                                             interpolation=cv2.INTER_CUBIC, p=0.8),

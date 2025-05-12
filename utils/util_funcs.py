@@ -5,6 +5,7 @@ import random
 import math
 from scipy.ndimage import measurements
 from skimage import morphology as morph
+import matplotlib.pyplot as plt
 
 import torch
 import torch.distributed as dist
@@ -36,6 +37,7 @@ def draw_dilation(img, instance_mask, instance_type, label_colors):
         instance_tp = np.unique(instance_type[indexes])
         assert len(instance_tp) == 1, "wrong instance type correspondence! "
         img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]%len(label_colors))]
+        # print(f"instance_tp[0]: {instance_tp[0]}")
         img_overlay[indexes] = img[indexes]
 
     return img_overlay
@@ -63,21 +65,62 @@ def draw_dilation_monusac(img, instance_mask):
 
 
 def visualize(imgs, ann, pred, output_dir):
-    colors = [[0  ,   0,   0], [255,   0,   0], [0  , 255,   0], 
-              [0  ,   0, 255], [255, 255,   0], [255, 165,   0]]
+    # BGR values
+    colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
+              [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
     
+    # color order nuclei: nolable (red), neutrphil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
     os.makedirs(output_dir, exist_ok=True)
+    
     for img_idx, (img, mask_gt, mask_pred) in enumerate(zip(imgs, ann, pred)):
         overlay_gt = draw_dilation(img, mask_gt[:, :, 0], mask_gt[:, :, 1], colors)
         overlay_pred = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors)
-
         img_to_write = np.zeros((mask_gt.shape[0], 2*mask_gt.shape[1]+5, 3))
         img_to_write[:, :mask_gt.shape[1], :] = overlay_gt
         img_to_write[:, -mask_gt.shape[1]:, :] = overlay_pred
-
+        img_to_write = img_to_write.astype(np.uint8)  # Convert to uint8
+        print(f"{img_idx}:{img_to_write.dtype}")
         output_path = f"{output_dir}/{img_idx}_overlay.png"
         cv2.imwrite(output_path, img_to_write)
+    # Convert from BGR to RGB if necessary (OpenCV uses BGR by default)
+    # img_to_write_rgb = cv2.cvtColor(img_to_write, cv2.COLOR_BGR2RGB)
 
+    # # Create a figure and axis
+    # fig, ax = plt.subplots()
+
+    # # Display the image
+    # ax.imshow(img_to_write_rgb)
+    # ax.axis('off')  # Hide axis
+    # plt.show()
+
+def visualize_no_gt(imgs, pred, output_dir):
+    # BGR values
+    colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
+              [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
+    
+    # color order nuclei: nolable (red), neutrphil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
+    os.makedirs(output_dir, exist_ok=True)
+    
+    for img_idx, (img, mask_pred) in enumerate(zip(imgs, pred)):
+        # overlay_gt = draw_dilation(img, mask_gt[:, :, 0], mask_gt[:, :, 1], colors)
+        overlay_pred = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors)
+        img_to_write = overlay_pred
+        # img_to_write[:, :mask_gt.shape[1], :] = overlay_gt
+        img_to_write[:, -mask_pred.shape[1]:, :] = overlay_pred
+        img_to_write = img_to_write.astype(np.uint8)  # Convert to uint8
+        print(f"{img_idx}:{img_to_write.dtype}")
+        output_path = f"{output_dir}/{img_idx}_overlay.png"
+        cv2.imwrite(output_path, img_to_write)
+    # Convert from BGR to RGB if necessary (OpenCV uses BGR by default)
+    # img_to_write_rgb = cv2.cvtColor(img_to_write, cv2.COLOR_BGR2RGB)
+
+    # # Create a figure and axis
+    # fig, ax = plt.subplots()
+
+    # # Display the image
+    # ax.imshow(img_to_write_rgb)
+    # ax.axis('off')  # Hide axis
+    # plt.show()
 
 def setup(rank, world_size, port='12353'):
     """
@@ -102,10 +145,14 @@ def run_function(func, world_size):
     :param func: the function to call in each thread
     :param world_size: the world size of the distributed system
     """
+    print(world_size)
+    print(func)
+    print("before spawned")
     mp.spawn(func,
              args=(world_size,),
              nprocs=world_size,
              join=True)
+    print("spawned")
 
 def cropping_center(x, crop_shape, batch=False):
     """Crop an input image at the centre.

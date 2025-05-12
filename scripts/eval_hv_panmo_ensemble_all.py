@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append('./')
-os.environ['TORCH_HOME'] = 'checkpoints'
+os.environ['TORCH_HOME'] = '/media/jenny/PRIVATE_USB/AugHoverData/checkpoints'
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,8 @@ warnings.filterwarnings("ignore")
 import torch
 from utils.stats_utils import get_pq, get_multi_pq_info, get_multi_r2
 from models.model_head_aug import HoVerNetHeadExt
-from utils.visualize_gt import visualize
+# from utils.visualize_gt import visualize
+from utils.util_funcs import visualize
 from utils.eval_utils import prepare_ground_truth, prepare_results, convert_pytorch_checkpoint
 from torchmetrics.functional import dice     
 
@@ -27,8 +28,10 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
     pq_list = []
     mpq_info_list = []
     nr_patches = pred_array.shape[0]
+    print(nr_patches)
 
     for patch_idx in tqdm(range(nr_patches)):
+        print(patch_idx)
         # get a single patch
         pred = pred_array[patch_idx]
         true = true_array[patch_idx]
@@ -64,6 +67,7 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
 
     mpq_list = []
     # for each class, get the multiclass PQ
+    print("cat_idx")
     for cat_idx in range(total_mpq_info_metrics.shape[0]):
         total_tp = total_mpq_info_metrics[cat_idx][0]
         total_fp = total_mpq_info_metrics[cat_idx][1]
@@ -76,7 +80,7 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
         # get the SQ, when not paired, it has 0 IoU so does not impact
         sq = total_sum_iou / (total_tp + 1.0e-6)
         mpq_list.append(dq * sq)
-
+    print("after cat_idx")
     mpq_metrics = np.array(mpq_list)
     all_metrics["pq"] = [pq_metrics_avg]
     all_metrics["multi_pq+"] = [np.mean(mpq_metrics)]
@@ -86,6 +90,7 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
     all_metrics["multi_r2"] = [r2]
 
     cell_dice_list = []
+    print("after cell_dice_list")
     for i in range(1, num_types):
         pred_array = torch.tensor(pred_array)
         true_array = torch.tensor(true_array)
@@ -107,8 +112,9 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
 
     for tp_idx in range(num_types-1):
         all_metrics[f"multi_r2_{nucleus_types[tp_idx]}"] = r2_array[tp_idx]
-
+    print("before dataframe")
     df = pd.DataFrame(all_metrics)
+    print("after dataframe")
     os.makedirs(f"{out_dir}/results", exist_ok=True)
     df = df.to_csv(f"{out_dir}/results/{epoch_idx}.csv", index=False)
 
@@ -168,19 +174,26 @@ def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, e
     
     # visualize(imgs_array_gt, labels_array_gt, labels_array_pred,f"visualize/overlay_{dataset_name}")
     eval_func(labels_array_gt, labels_array_pred, \
-            nuclei_counts_df_gt, nuclei_counts_df_pred, f"wenhua_docker_test/conic_{dataset_name}ensemble_all/{FOLD_IDX:02d}", epoch_idx, num_types=tp_num)
-
+            nuclei_counts_df_gt, nuclei_counts_df_pred, f"/media/jenny/PRIVATE_USB/pannuke/pannuke_images/pannuke_test_results/conic_{dataset_name}ensemble_all/{FOLD_IDX:02d}", epoch_idx, num_types=tp_num)
+    
+    output_dir = "/media/jenny/PRIVATE_USB/pannuke/pannuke_images/pannuke_test_results/overlay/"
+    visualize(imgs_array_gt, labels_array_gt , labels_array_pred , output_dir)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--split', type=int, default='0')
     parser.add_argument("--model", type=str, default="hovernet")
 
-    parser.add_argument('--exp_name0', type=str, default='conic_seresnext50')
+    # parser.add_argument('--exp_name0', type=str, default='conic_seresnext50')
+    # parser.add_argument("--encoder_name0", type=str, default="seresnext50")
+    parser.add_argument('--exp_name0', type=str, default='pannuke_seresnext50')
     parser.add_argument("--encoder_name0", type=str, default="seresnext50")
 
-    parser.add_argument('--exp_name1', type=str, default='conic_seresnext101')
+    # parser.add_argument('--exp_name1', type=str, default='conic_seresnext101')
+    # parser.add_argument("--encoder_name1", type=str, default="seresnext101")
+    parser.add_argument('--exp_name1', type=str, default='pannuke_seresnext101')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
+
 
     args = parser.parse_args()
 
@@ -191,8 +204,8 @@ if __name__ == "__main__":
         ann_path = "data_monusac/labels_test.npy"
         tp_num = 5
     elif "pannuke" in args.exp_name0:
-        img_path = f"data_pannuke/panNuke_split/split_{args.split}/images_test.npy"
-        ann_path = f"data_pannuke/panNuke_split/split_{args.split}/labels_test.npy"
+        img_path = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{args.split}/images_test.npy"
+        ann_path = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{args.split}/labels_test.npy"
         tp_num = 6
 
     labels = np.load(ann_path)

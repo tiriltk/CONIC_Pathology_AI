@@ -6,6 +6,7 @@ import cv2
 from typing import Tuple, Union
 from termcolor import colored
 import shutil
+import matplotlib.pyplot as plt
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -83,8 +84,8 @@ def overlay_prediction_contours(
             f"`inst_colours` must be np.ndarray or tuple: {type(inst_colours)}"
         )
     inst_colours = inst_colours.astype(np.uint8)
-
-    for idx, [_, inst_info] in enumerate(inst_dict.items()):
+    
+    for idx, [_, inst_info] in enumerate(inst_dict.items()): # _ in [_, inst_info] is used to indicate that the value of the keys are not being used in the subsequent code
         inst_contour = inst_info["contour"]
         if "type" in inst_info and type_colours is not None:
             inst_colour = type_colours[inst_info["type"]][1]
@@ -127,22 +128,34 @@ def process_segmentation(np_map, hv_map, tp_map, model):
 
     inst_map = model._proc_np_hv(np_map[..., None], hv_map)
     inst_dict = model._get_instance_info(inst_map, tp_map)
-
+    # plt.imshow(inst_map)
+    # plt.axis('off') 
+    # plt.show() 
     # Generating results match with the evaluation protocol
     type_map = np.zeros_like(inst_map)
     inst_type_colours = np.array([
             [v['type']] * 3 for v in inst_dict.values()
         ])
-
+    
+    # type_map = overlay_prediction_contours(
+    #         type_map, inst_dict,
+    #         line_thickness=-1,
+    #         inst_colours=inst_type_colours)
     type_map = overlay_prediction_contours(
             type_map, inst_dict,
             line_thickness=-1,
             inst_colours=inst_type_colours)
-            
+    
+    # plt.imshow(type_map)
+    # plt.axis('off') 
+    # plt.show()    
     pred_map = np.dstack([inst_map, type_map])
     # The result for evaluation is at 0.5mpp so we scale back
     pred_map = cv2.resize(pred_map, (0, 0), fx=0.5, fy=0.5,
                         interpolation=cv2.INTER_NEAREST)
+    # plt.imshow(pred_map)
+    # plt.axis('off') 
+    # plt.show() 
     return pred_map
 
 
@@ -210,12 +223,20 @@ def get_npy_csv(masks, patch_shape=[256, 256]):
     inst_map_array = np.array(inst_map_list).astype("uint16")
     class_map_array = np.array(class_map_list).astype("uint16")
     nuclei_counts_array = np.array(nuclei_counts_list).astype("uint16")
-
+    # print(f"nuclei_counts_array:{nuclei_counts_array}")
     # combine instance map and classification map to form single array
     inst_map_array = np.expand_dims(inst_map_array, -1)
     class_map_array = np.expand_dims(class_map_array, -1)
     labels_array = np.concatenate((inst_map_array, class_map_array), axis=-1)
-
+    data={
+            "neutrophil": nuclei_counts_array[:, 0],
+            "epithelial": nuclei_counts_array[:, 1],
+            "lymphocyte": nuclei_counts_array[:, 2],
+            "plasma": nuclei_counts_array[:, 3],
+            "eosinophil": nuclei_counts_array[:, 4],
+            "connective": nuclei_counts_array[:, 5],
+        }
+    # print(f'nuclei_counts_df_connective:{data["connective"]}')
     # convert to pandas dataframe
     nuclei_counts_df = pd.DataFrame(
         data={
@@ -227,14 +248,15 @@ def get_npy_csv(masks, patch_shape=[256, 256]):
             "connective": nuclei_counts_array[:, 5],
         }
     )
-
+    
     return labels_array, nuclei_counts_df, nuclei_counts_array
 
 
 def prepare_ground_truth(imgs, masks, valid_indexes):
     masks_valid = masks[valid_indexes]
     imgs_valid = imgs[valid_indexes]
-    labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = get_npy_csv(masks_valid, patch_shape=[224, 224])
+    # labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = get_npy_csv(masks_valid, patch_shape=[224, 224])
+    labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = get_npy_csv(masks_valid, patch_shape=[256, 256])
 
     return imgs_valid, labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt
     
@@ -247,14 +269,15 @@ def prepare_results(np_results, hv_results, tp_results, model):
         tp_map = np.array(tp_map)
 
         pred_map = process_segmentation(np_map, hv_map, tp_map, model)
-
+        
         # input("checkpoint")
         semantic_predictions.append(pred_map)
-    
+       
     semantic_predictions = np.array(semantic_predictions)
-
+    # labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions,
+    #                                                                                  patch_shape=[224, 224])
     labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions,
-                                                                                     patch_shape=[224, 224])
+                                                                                     patch_shape=[256, 256])
     return labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred
 
 

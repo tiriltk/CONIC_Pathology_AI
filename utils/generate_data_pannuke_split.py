@@ -4,7 +4,7 @@ sys.path.append("./")
 import cv2
 
 import numpy as np
-from utils.visualize_gt import draw_dilation_seg
+# from utils.visualize_gt import draw_dilation_seg
 
 def remap_label(pred, by_size=False):
     """
@@ -48,8 +48,12 @@ def pannuke(split=0, test=False):
     images_train = []
     labels_train = []
 
-    images_this = np.load(f"/data/teacher/workspace/csbj/HoVerNet-JBHI/data_pannuke/panNuke/Fold_{split+1}/images/images.npy")
-    masks_this = np.load(f"/data/teacher/workspace/csbj/HoVerNet-JBHI/data_pannuke/panNuke/Fold_{split+1}/masks/masks.npy")
+    print("Loading data")
+
+    images_this = np.load(f"/home/jenny/pannuke_dataset/Fold_{split+1}/images/images.npy", mmap_mode='r')
+    masks_this = np.load(f"/home/jenny/pannuke_dataset/Fold_{split+1}/masks/masks.npy", mmap_mode='r')
+
+    print("Loaded data, starting iteration")
 
     for img_single, mask_single in zip(images_this, masks_this):
         images_train.append(img_single)
@@ -78,7 +82,7 @@ def pannuke(split=0, test=False):
     labels_train = np.array(labels_train)
     print("labels_train shape: ", labels_train.shape)
 
-    os.makedirs(f"/data/teacher/workspace/csbj/HoVerNet-JBHI/data_pannuke/split_{split}/", exist_ok=True)
+    os.makedirs(f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{split}/", exist_ok=True)
 
     if test:
         train_test = "test"
@@ -88,8 +92,8 @@ def pannuke(split=0, test=False):
     # images_to_lean = np.load(f"/data/teacher/workspace/csbj/HoVerNet-JBHI/data_pannuke/images_{train_test}.npy")
     # print("images_to_learn shape: ", images_to_lean.shape)
 
-    np.save(f"/data/teacher/workspace/csbj/HoVerNet-JBHI/data_pannuke/split_{split}/images_{train_test}.npy", images_train)
-    np.save(f"/data/teacher/workspace/csbj/HoVerNet-JBHI/data_pannuke/split_{split}/labels_{train_test}.npy", labels_train)
+    np.save(f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{split}/images_{train_test}.npy", images_train)
+    np.save(f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{split}/labels_{train_test}.npy", labels_train)
     
                 
                 
