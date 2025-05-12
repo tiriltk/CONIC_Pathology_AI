@@ -5,7 +5,7 @@ import torch.nn as nn
 
 from timm.models.efficientnet import EfficientNet
 from timm.models.efficientnet import decode_arch_def, round_channels, default_cfgs
-from timm.models.layers.activations import Swish
+from timm.layers.activations import Swish
 
 from ._base import EncoderMixin
 
@@ -141,11 +141,38 @@ class EfficientNetLiteEncoder(EfficientNetBaseEncoder):
         super().__init__(stage_idxs, out_channels, depth, **kwargs)
 
 
-def prepare_settings(settings):
+# def prepare_settings(settings):
+#     print(settings.cfgs)
+#     # print(settings.default)
+#     return {
+#         "mean": settings.cfgs['mean'],  # Accessing using the dictionary keys
+#         "std": settings.cfgs['std'],
+#         "url": settings.cfgs['url'],
+#         "input_range": (0, 1),
+#         "input_space": "RGB",
+#     }
+
+# def prepare_settings(settings):
+#     # print(settings.cfgs.keys()) 
+#     pp = settings.cfgs['ns_jft_in1k'].mean 
+#     print(pp)
+#     dd = settings.cfgs['ns_jft_in1k'].std
+#     print(dd)
+#     dict = {"mean": pp,            
+#         "std": dd,              
+#         "url": settings.cfgs['ns_jft_in1k'].url,              
+#         "input_range": (0, 1),
+#         "input_space": "RGB",}
+#     print(dict["mean"])
+#     return dict
+
+def prepare_settings(settings, cfgs_key):
+    # print(settings)
+    print(settings.cfgs[cfgs_key].mean)
     return {
-        "mean": settings["mean"],
-        "std": settings["std"],
-        "url": settings["url"],
+        "mean": settings.cfgs[cfgs_key].mean,
+        "std": settings.cfgs[cfgs_key].std,
+        "url": settings.cfgs[cfgs_key].url,
         "input_range": (0, 1),
         "input_space": "RGB",
     }
@@ -156,9 +183,12 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b0": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b0"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b0_ap"]),
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b0_ns"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b0"], "aa_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b0"], "ap_in1k"),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b0"], "ns_jft_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b0"], "ns_jft_in1k"),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b0_ap"]),
+            # "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b0_ns"]),
         },
         "params": {
             "out_channels": (3, 32, 24, 40, 112, 320),
@@ -172,9 +202,12 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b1": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b1"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b1_ap"]),
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b1_ns"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b1"], "aa_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b1"], "ap_in1k"),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b1"], "ns_jft_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b1"]),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b1_ap"]),
+            # "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b1_ns"]),
         },
         "params": {
             "out_channels": (3, 32, 24, 40, 112, 320),
@@ -188,9 +221,12 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b2": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b2"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b2_ap"]),
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b2_ns"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b2"], "aa_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b2"], "ap_in1k"),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b2"], "ns_jft_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b2"]),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b2_ap"]),
+            # "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b2_ns"]),
         },
         "params": {
             "out_channels": (3, 32, 24, 48, 120, 352),
@@ -204,9 +240,12 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b3": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b3"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b3_ap"]),
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b3_ns"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b3"], "aa_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b3"], "ap_in1k"),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b3"], "ns_jft_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b3"]),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b3_ap"]),
+            # "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b3_ns"]),
         },
         "params": {
             "out_channels": (3, 40, 32, 48, 136, 384),
@@ -220,9 +259,12 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b4": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b4"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b4_ap"]),
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b4_ns"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b4"], "aa_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b4"], "ap_in1k"),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b4"], "ns_jft_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b4"]),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b4_ap"]),
+            # "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b4_ns"]),
         },
         "params": {
             "out_channels": (3, 48, 32, 56, 160, 448),
@@ -236,9 +278,12 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b5": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b5"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b5_ap"]),
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b5_ns"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b5"], "ra_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b5"], "ap_in1k"),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b5"], "ns_jft_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b5"]),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b5_ap"]),
+            # "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b5_ns"]),
         },
         "params": {
             "out_channels": (3, 48, 40, 64, 176, 512),
@@ -252,9 +297,12 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b6": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b6"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b6_ap"]),
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b6_ns"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b6"], "aa_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b6"], "ap_in1k"),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b6"], "ns_jft_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b6"]),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b6_ap"]),
+            # "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b6_ns"]),
         },
         "params": {
             "out_channels": (3, 56, 40, 72, 200, 576),
@@ -268,9 +316,12 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b7": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b7"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b7_ap"]),
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b7_ns"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b7"], "ra_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b7"], "ap_in1k"),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b7"], "ns_jft_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b7"]),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b7_ap"]),
+            # "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_b7_ns"]),
         },
         "params": {
             "out_channels": (3, 64, 48, 80, 224, 640),
@@ -284,8 +335,10 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-b8": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b8"]),
-            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b8_ap"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b8"], "ra_in1k"),
+            "advprop": prepare_settings(default_cfgs["tf_efficientnet_b8"], "ap_in1k"),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_b8"]),
+            # "advprop": prepare_settings(default_cfgs["tf_efficientnet_b8_ap"]),
         },
         "params": {
             "out_channels": (3, 72, 56, 88, 248, 704),
@@ -299,7 +352,7 @@ timm_efficientnet_encoders = {
     "timm-efficientnet-l2": {
         "encoder": EfficientNetEncoder,
         "pretrained_settings": {
-            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_l2_ns"]),
+            "noisy-student": prepare_settings(default_cfgs["tf_efficientnet_l2"], "ns_jft_in1k"),
         },
         "params": {
             "out_channels": (3, 136, 104, 176, 480, 1376),
@@ -309,11 +362,12 @@ timm_efficientnet_encoders = {
             "drop_rate": 0.5,
         },
     },
-
+    
     "timm-tf_efficientnet_lite0": {
         "encoder": EfficientNetLiteEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite0"]),
+            # "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite0"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite0"], "in1k"),
         },
         "params": {
             "out_channels": (3, 32, 24, 40, 112, 320),
@@ -327,7 +381,7 @@ timm_efficientnet_encoders = {
     "timm-tf_efficientnet_lite1": {
         "encoder": EfficientNetLiteEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite1"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite1"], "in1k"),
         },
         "params": {
             "out_channels": (3, 32, 24, 40, 112, 320),
@@ -341,7 +395,7 @@ timm_efficientnet_encoders = {
     "timm-tf_efficientnet_lite2": {
         "encoder": EfficientNetLiteEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite2"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite2"], "in1k"),
         },
         "params": {
             "out_channels": (3, 32, 24, 48, 120, 352),
@@ -355,7 +409,7 @@ timm_efficientnet_encoders = {
     "timm-tf_efficientnet_lite3": {
         "encoder": EfficientNetLiteEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite3"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite3"], "in1k"),
         },
         "params": {
             "out_channels": (3, 32, 32, 48, 136, 384),
@@ -369,7 +423,7 @@ timm_efficientnet_encoders = {
     "timm-tf_efficientnet_lite4": {
         "encoder": EfficientNetLiteEncoder,
         "pretrained_settings": {
-            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite4"]),
+            "imagenet": prepare_settings(default_cfgs["tf_efficientnet_lite4"], "in1k"),
         },
         "params": {
             "out_channels": (3, 32, 32, 56, 160, 448),
