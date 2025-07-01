@@ -24,7 +24,7 @@ class ResNetExt(ResNet):
                 x4 = x = self.layer4(x)
         else:
             x = self.conv1(x)
-            x = self.bn1(x)
+            x = self.bn1(x)  # Batch Norm during inference?
             x = self.relu(x)
             x1 = x = self.layer1(x)
             x2 = x = self.layer2(x)
