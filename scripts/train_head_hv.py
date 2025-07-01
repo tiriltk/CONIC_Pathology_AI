@@ -184,4 +184,5 @@ def demo_basic(rank, world_size):
 
 if __name__ == "__main__":
     n_gpus = torch.cuda.device_count()
+    print(""f"n_gpus: {n_gpus}")
     run_function(demo_basic, n_gpus)
