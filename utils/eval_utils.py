@@ -137,10 +137,6 @@ def process_segmentation(np_map, hv_map, tp_map, model):
             [v['type']] * 3 for v in inst_dict.values()
         ])
     
-    # type_map = overlay_prediction_contours(
-    #         type_map, inst_dict,
-    #         line_thickness=-1,
-    #         inst_colours=inst_type_colours)
     type_map = overlay_prediction_contours(
             type_map, inst_dict,
             line_thickness=-1,
@@ -194,14 +190,10 @@ def get_npy_csv(masks, patch_shape=[256, 256]):
         # ensure nuclei range from 0 to N (N is the number of nuclei in the patch)
         patch_inst = remap_label(patch_inst)
 
-        # only consider nuclei for counting if it exists within the central 224x224 region
-        if patch_inst.shape[0] == 256:
-            patch_inst_crop = cropping_center(patch_inst, [224, 224])
-            patch_class_crop = cropping_center(patch_class, [224, 224])
-        elif patch_inst.shape[0] == 224:
-            tgt_crop_size = int( 224 * (224 / 256))
-            patch_inst_crop = cropping_center(patch_inst, [tgt_crop_size, tgt_crop_size])
-            patch_class_crop = cropping_center(patch_class, [tgt_crop_size, tgt_crop_size])
+        # only consider nuclei for counting if it exists within the central [patch_shape[0]-50, patch_shape[1]-50] region
+        patch_inst_crop = cropping_center(patch_inst, [patch_shape[0]-50, patch_shape[1]-50])
+        patch_class_crop = cropping_center(patch_class, [patch_shape[0]-50, patch_shape[1]-50])
+        print(f"Region for counted nuclei: {[patch_shape[0]-50, patch_shape[1]-50]}")
         
         nuclei_counts_perclass = []
         # get the counts per class
@@ -218,25 +210,27 @@ def get_npy_csv(masks, patch_shape=[256, 256]):
         inst_map_list.append(patch_inst)
         class_map_list.append(patch_class)
         nuclei_counts_list.append(nuclei_counts_perclass)
+        
 
     # convert to numpy array
     inst_map_array = np.array(inst_map_list).astype("uint16")
     class_map_array = np.array(class_map_list).astype("uint16")
     nuclei_counts_array = np.array(nuclei_counts_list).astype("uint16")
-    # print(f"nuclei_counts_array:{nuclei_counts_array}")
+
     # combine instance map and classification map to form single array
     inst_map_array = np.expand_dims(inst_map_array, -1)
     class_map_array = np.expand_dims(class_map_array, -1)
     labels_array = np.concatenate((inst_map_array, class_map_array), axis=-1)
     data={
-            "neutrophil": nuclei_counts_array[:, 0],
-            "epithelial": nuclei_counts_array[:, 1],
-            "lymphocyte": nuclei_counts_array[:, 2],
-            "plasma": nuclei_counts_array[:, 3],
-            "eosinophil": nuclei_counts_array[:, 4],
-            "connective": nuclei_counts_array[:, 5],
+            "neutrophil": nuclei_counts_array[0, 0],
+            "epithelial": nuclei_counts_array[0, 1],
+            "lymphocyte": nuclei_counts_array[0, 2],
+            "plasma": nuclei_counts_array[0, 3],
+            "eosinophil": nuclei_counts_array[0, 4],
+            "connective": nuclei_counts_array[0, 5],
         }
-    # print(f'nuclei_counts_df_connective:{data["connective"]}')
+    # # print(f'nuclei_counts_df_connective:{data["connective"]}')
+    
     # convert to pandas dataframe
     nuclei_counts_df = pd.DataFrame(
         data={
@@ -246,7 +240,8 @@ def get_npy_csv(masks, patch_shape=[256, 256]):
             "plasma": nuclei_counts_array[:, 3],
             "eosinophil": nuclei_counts_array[:, 4],
             "connective": nuclei_counts_array[:, 5],
-        }
+        },
+
     )
     
     return labels_array, nuclei_counts_df, nuclei_counts_array
@@ -261,7 +256,7 @@ def prepare_ground_truth(imgs, masks, valid_indexes):
     return imgs_valid, labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt
     
 
-def prepare_results(np_results, hv_results, tp_results, model):
+def prepare_results(np_results, hv_results, tp_results, model, patch_shape):
     semantic_predictions = []
     for (np_map, hv_map, tp_map) in zip(np_results, hv_results, tp_results):
         np_map = np.array(np_map)
@@ -274,10 +269,8 @@ def prepare_results(np_results, hv_results, tp_results, model):
         semantic_predictions.append(pred_map)
        
     semantic_predictions = np.array(semantic_predictions)
-    # labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions,
-    #                                                                                  patch_shape=[224, 224])
-    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions,
-                                                                                     patch_shape=[256, 256])
+                                                                            
+    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions, patch_shape= patch_shape)
     return labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred
 
 
