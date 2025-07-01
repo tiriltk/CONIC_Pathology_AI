@@ -56,7 +56,7 @@ def pannuke_process():
 
     types_images = np.load(types_path)
     print("types_images shape: ", types_images.shape)
-    print(types_images[0])
+    # print(types_images[0])
 
 
 def lizard_process_openmmlab():
