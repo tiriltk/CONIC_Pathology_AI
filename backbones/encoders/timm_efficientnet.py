@@ -168,7 +168,7 @@ class EfficientNetLiteEncoder(EfficientNetBaseEncoder):
 
 def prepare_settings(settings, cfgs_key):
     # print(settings)
-    print(settings.cfgs[cfgs_key].mean)
+    # print(settings.cfgs[cfgs_key].mean)
     return {
         "mean": settings.cfgs[cfgs_key].mean,
         "std": settings.cfgs[cfgs_key].std,
