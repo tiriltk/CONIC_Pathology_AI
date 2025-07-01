@@ -20,7 +20,10 @@ def rm_n_mkdir(dir_path):
 
 
 def draw_dilation(img, instance_mask, instance_type, label_colors):
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    # Change type of image if necessarily
+    if img.dtype == np.float64:
+        img = img.astype(np.uint8)             # convert image to uint8
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR) # convert image from rgb to bgr
     img_overlay = img.copy()
 
     instance_list = np.unique(instance_mask)[1:]
@@ -39,7 +42,7 @@ def draw_dilation(img, instance_mask, instance_type, label_colors):
         img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]%len(label_colors))]
         # print(f"instance_tp[0]: {instance_tp[0]}")
         img_overlay[indexes] = img[indexes]
-
+    
     return img_overlay
 
 def draw_dilation_monusac(img, instance_mask):
@@ -60,16 +63,26 @@ def draw_dilation_monusac(img, instance_mask):
 
         img_overlay[inst_pixels_dilated] = color
         img_overlay[indexes] = img[indexes]
-
     return img_overlay
 
 
-def visualize(imgs, ann, pred, output_dir):
-    # BGR values
-    colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
-              [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
+def visualize(imgs, ann, pred, output_dir, dataset):
     
-    # color order nuclei: nolable (red), neutrphil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
+    # Decide colors for visualization of nuclei based on datset used
+    if dataset=="conic":
+        print(f"Dataset in visualize: {dataset}")
+        # BGR values used in color
+        colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
+                [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
+        # color order nuclei: nolable (red), neutrphil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
+
+    elif dataset=="pannuke":
+        print(f"Dataset in visualize: {dataset}")
+        # BGR values used in color
+        colors = [[0  ,   0,   255], [255  ,   200, 0], [0, 255,   0], 
+                [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
+        # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
+    
     os.makedirs(output_dir, exist_ok=True)
     
     for img_idx, (img, mask_gt, mask_pred) in enumerate(zip(imgs, ann, pred)):
@@ -79,8 +92,7 @@ def visualize(imgs, ann, pred, output_dir):
         img_to_write[:, :mask_gt.shape[1], :] = overlay_gt
         img_to_write[:, -mask_gt.shape[1]:, :] = overlay_pred
         img_to_write = img_to_write.astype(np.uint8)  # Convert to uint8
-        print(f"{img_idx}:{img_to_write.dtype}")
-        output_path = f"{output_dir}/{img_idx}_overlay.png"
+        output_path = f"{output_dir}/{1000+ img_idx}_overlay.png"
         cv2.imwrite(output_path, img_to_write)
     # Convert from BGR to RGB if necessary (OpenCV uses BGR by default)
     # img_to_write_rgb = cv2.cvtColor(img_to_write, cv2.COLOR_BGR2RGB)
@@ -93,22 +105,30 @@ def visualize(imgs, ann, pred, output_dir):
     # ax.axis('off')  # Hide axis
     # plt.show()
 
-def visualize_no_gt(imgs, pred, output_dir):
-    # BGR values
-    colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
-              [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
+def visualize_no_gt(imgs, pred, output_dir, dataset):
+
+    # Decide colors for visualization of nuclei based on datset used
+    if dataset=="conic":
+        print(f"Dataset in visualize: {dataset}")
+        # BGR values used in color
+        colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
+                [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
+        # color order nuclei: nolable (red), neutrphil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
+
+    elif dataset=="pannuke":
+        print(f"Dataset in visualize: {dataset}")
+        # BGR values used in color
+        colors = [[0  ,   0,   255], [255  ,   200, 0], [0, 255,   0], 
+                [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
+        # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
     
-    # color order nuclei: nolable (red), neutrphil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
     os.makedirs(output_dir, exist_ok=True)
     
     for img_idx, (img, mask_pred) in enumerate(zip(imgs, pred)):
-        # overlay_gt = draw_dilation(img, mask_gt[:, :, 0], mask_gt[:, :, 1], colors)
         overlay_pred = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors)
         img_to_write = overlay_pred
-        # img_to_write[:, :mask_gt.shape[1], :] = overlay_gt
         img_to_write[:, -mask_pred.shape[1]:, :] = overlay_pred
         img_to_write = img_to_write.astype(np.uint8)  # Convert to uint8
-        print(f"{img_idx}:{img_to_write.dtype}")
         output_path = f"{output_dir}/{img_idx}_overlay.png"
         cv2.imwrite(output_path, img_to_write)
     # Convert from BGR to RGB if necessary (OpenCV uses BGR by default)
@@ -145,14 +165,10 @@ def run_function(func, world_size):
     :param func: the function to call in each thread
     :param world_size: the world size of the distributed system
     """
-    print(world_size)
-    print(func)
-    print("before spawned")
     mp.spawn(func,
              args=(world_size,),
              nprocs=world_size,
              join=True)
-    print("spawned")
 
 def cropping_center(x, crop_shape, batch=False):
     """Crop an input image at the centre.
