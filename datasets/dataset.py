@@ -101,7 +101,7 @@ class CoNICDataset(torch.utils.data.Dataset):
         elif preprocess == "aug_distort":
             self.aug_this_try = aug_distort   
 
-        print(self.aug_this_try)            
+        # print(self.aug_this_try)            
                     
         self.imgs = np.load(img_path, mmap_mode='r')[indices]
         self.anns = np.load(ann_path, mmap_mode='r')[indices]
@@ -244,7 +244,7 @@ class CoNICDataset(torch.utils.data.Dataset):
                 A.CenterCrop(self.input_shape[0], self.input_shape[1])
             ])
 
-        print(augs)
+        # print(augs)
         return augs
 
 
