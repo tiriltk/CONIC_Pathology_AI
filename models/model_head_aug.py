@@ -1,4 +1,3 @@
-
 from collections import OrderedDict
 import numpy as np
 import math
@@ -233,13 +232,13 @@ class HoVerNetHeadExt(nn.Module):
 
     @staticmethod
     def _get_instance_info(pred_inst, pred_type=None):
-        inst_id_list = np.unique(pred_inst)[1:]  # exclude background
+        inst_id_list = np.unique(pred_inst)[1:]  # exclude background by excluding 0 but find all other possible ids
 
         inst_info_dict = {}
         for inst_id in inst_id_list:
-            inst_map = pred_inst == inst_id
+            inst_map = pred_inst == inst_id # find all nuclei instances basically. idk pred_inst values?
 
-            [rmin, rmax, cmin, cmax] = get_bounding_box(inst_map)
+            [rmin, rmax, cmin, cmax] = get_bounding_box(inst_map) # I guess rmin is row min and cmin is column min etc
             inst_box = np.array([cmin, rmin, cmax, rmax])
             inst_box_tl = inst_box[:2]
             inst_map = inst_map[inst_box[1] : inst_box[3], inst_box[0] : inst_box[2]]
@@ -384,22 +383,19 @@ class HoVerNetHeadExt(nn.Module):
     @staticmethod
     def infer_batch_inner_ensemble(model, batch_data, on_gpu, hv_func=None, idx=None, encoder_name=None):
         patch_imgs = batch_data
-
+        
         device = "cuda" if on_gpu else "cpu"
         patch_imgs_gpu = patch_imgs.to(device).type(torch.float32)  # to NCHW
         patch_imgs_gpu = patch_imgs_gpu.permute(0, 3, 1, 2).contiguous()
-
         model.eval()  # infer mode
 
         # --------------------------------------------------------------
 
         with torch.no_grad():
             pred_dict_0_np, pred_dict_0_hv, pred_dict_0_tp = model(patch_imgs_gpu)
-
             pred_dict_0_np = F.softmax(pred_dict_0_np, dim=1)[:, 1:, :, :]
             pred_dict_0_hv = torch.tanh(pred_dict_0_hv)
             pred_dict_0_tp = F.softmax(pred_dict_0_tp, dim=1)
-
             pred_dict_1_np, pred_dict_1_hv, pred_dict_1_tp = model(patch_imgs_gpu.flip(3))
 
             pred_dict_1_np, pred_dict_1_tp = pred_dict_1_np.flip(3), pred_dict_1_tp.flip(3)
