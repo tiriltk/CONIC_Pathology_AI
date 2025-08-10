@@ -1,8 +1,8 @@
 import os
 import sys
 sys.path.append('./')
-os.environ['TORCH_HOME'] = '/media/jenny/PRIVATE_USB/AugHoverData/checkpoints'
-
+os.environ['TORCH_HOME'] = '/media/jenny/PRIVATE_USB/AugHoverData/cache'
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -19,7 +19,8 @@ from models.model_head_aug import HoVerNetHeadExt
 # from utils.visualize_gt import visualize
 from utils.util_funcs import visualize
 from utils.eval_utils import prepare_ground_truth, prepare_results, convert_pytorch_checkpoint
-from torchmetrics.functional import dice     
+# from torchmetrics.functional import dice 
+from torchmetrics.segmentation import DiceScore    
 
 def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, num_types=0):
 
@@ -28,10 +29,10 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
     pq_list = []
     mpq_info_list = []
     nr_patches = pred_array.shape[0]
-    print(nr_patches)
+    print(f"number of patches: {nr_patches}")
 
     for patch_idx in tqdm(range(nr_patches)):
-        print(patch_idx)
+        
         # get a single patch
         pred = pred_array[patch_idx]
         true = true_array[patch_idx]
@@ -94,11 +95,15 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
     for i in range(1, num_types):
         pred_array = torch.tensor(pred_array)
         true_array = torch.tensor(true_array)
-        cell_dice = dice(preds=(pred_array[:, :, :, 1] == i), target=(true_array[:, :, :, 1] == i), ignore_index=0).cpu()
-        cell_dice_list.append(cell_dice.numpy())
-    
-    all_metrics['dice'] = np.mean(np.array(cell_dice_list))
+        preds = pred_array[:, :, :, 1] == i
+        target = true_array[:, :, :, 1] == i
+        # num_classes = num_types-1
+        cell_dice = DiceScore(num_classes=num_types, include_background=False).cpu()
+        cell_dice = cell_dice(preds, target)
+        cell_dice_list.append(cell_dice)
 
+    all_metrics['dice'] = np.mean(np.array(cell_dice_list))
+  
     if num_types == 7:
         nucleus_types = ["neutrophil", "epithelial", "lymphocyte", "plasma", "eosinophil", "connective"]
     elif num_types == 6:
@@ -119,13 +124,15 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
     df = df.to_csv(f"{out_dir}/results/{epoch_idx}.csv", index=False)
 
 
-def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, epoch_idx=30):
+def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, epoch_idx=41):
     valid_indices = range(len(imgs_load))
 
-    checkpoint_path0 = f"checkpoints/{exp_name0}/improved-net_{epoch_idx}.pt"
+    checkpoint_path0 = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_checkpoints_trained/checkpoints/batch_size_8/{exp_name0}/improved-net_{epoch_idx}.pt"
+    print(f"checkpoint_path0: {checkpoint_path0}")
     segmentation_model0 = HoVerNetHeadExt(num_types=tp_num, encoder_name=encoder_name0, pretrained_backbone=None)
 
-    checkpoint_path1 = f"checkpoints/{exp_name1}/improved-net_{epoch_idx}.pt"
+    checkpoint_path1 = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_checkpoints_trained/checkpoints/batch_size_8/{exp_name1}/improved-net_{epoch_idx}.pt"
+    print(f"checkpoint_path1: {checkpoint_path1}")
     segmentation_model1 = HoVerNetHeadExt(num_types=tp_num, encoder_name=encoder_name1, pretrained_backbone=None)
     
     state_dict = torch.load(checkpoint_path0)
@@ -162,7 +169,7 @@ def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, e
         hv_results.append(hv_map)
         tp_results.append(tp_map)
 
-    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = prepare_results(np_results, hv_results, tp_results, segmentation_model1)
+    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = prepare_results(np_results, hv_results, tp_results, segmentation_model1, patch_shape=[256,256])
 
     imgs_array_gt, labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = prepare_ground_truth(imgs_load, labels, valid_indices)  
 
@@ -174,10 +181,11 @@ def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, e
     
     # visualize(imgs_array_gt, labels_array_gt, labels_array_pred,f"visualize/overlay_{dataset_name}")
     eval_func(labels_array_gt, labels_array_pred, \
-            nuclei_counts_df_gt, nuclei_counts_df_pred, f"/media/jenny/PRIVATE_USB/pannuke/pannuke_images/pannuke_test_results/conic_{dataset_name}ensemble_all/{FOLD_IDX:02d}", epoch_idx, num_types=tp_num)
+            nuclei_counts_df_gt, nuclei_counts_df_pred, f"/media/jenny/PRIVATE_USB/AugHoverData/all_pannuke_output/eval_func/batch_size_8_eval_fold_0_part3_1/{dataset_name}_ensemble_all/{FOLD_IDX:02d}", epoch_idx, num_types=tp_num)
     
-    output_dir = "/media/jenny/PRIVATE_USB/pannuke/pannuke_images/pannuke_test_results/overlay/"
-    visualize(imgs_array_gt, labels_array_gt , labels_array_pred , output_dir)
+    # if epoch_idx==49:
+    #     output_dir = "/media/jenny/PRIVATE_USB/AugHoverData/all_pannuke_output/output_dir/batch_size_8_part3/"
+    #     visualize(imgs_array_gt, labels_array_gt , labels_array_pred , output_dir)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -186,12 +194,12 @@ if __name__ == "__main__":
 
     # parser.add_argument('--exp_name0', type=str, default='conic_seresnext50')
     # parser.add_argument("--encoder_name0", type=str, default="seresnext50")
-    parser.add_argument('--exp_name0', type=str, default='pannuke_seresnext50')
+    parser.add_argument('--exp_name0', type=str, default='hover_paper_pannuke_seresnext50')
     parser.add_argument("--encoder_name0", type=str, default="seresnext50")
 
     # parser.add_argument('--exp_name1', type=str, default='conic_seresnext101')
     # parser.add_argument("--encoder_name1", type=str, default="seresnext101")
-    parser.add_argument('--exp_name1', type=str, default='pannuke_seresnext101')
+    parser.add_argument('--exp_name1', type=str, default='hover_paper_pannuke_seresnext101')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
 
 
@@ -207,10 +215,19 @@ if __name__ == "__main__":
         img_path = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{args.split}/images_test.npy"
         ann_path = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{args.split}/labels_test.npy"
         tp_num = 6
+    
+    # used mmap to decrease memory demand
+    labels = np.load(ann_path, mmap_mode='r')
+    imgs_load = np.load(img_path, mmap_mode='r')
+    print(f"imgs_load_shape_all:{imgs_load.shape}")
+    # labels = labels[1000:1500]
+    # imgs_load= imgs_load[1000:1500]
+    # print(f"imgs_load_shape:{imgs_load.shape}")
 
-    labels = np.load(ann_path)
-    imgs_load = np.load(img_path)
+    epoch_idx=49
+    eval_models(args.split, imgs_load, labels, tp_num, args.exp_name0, args.encoder_name0, \
+                    args.exp_name1, args.encoder_name1, epoch_idx=epoch_idx)
 
-    for epoch_idx in range(40, 50):
-        eval_models(args.split, imgs_load, labels, tp_num, args.exp_name0, args.encoder_name0, \
-                        args.exp_name1, args.encoder_name1, epoch_idx=epoch_idx)
+    # for epoch_idx in range(40, 50):
+    #     eval_models(args.split, imgs_load, labels, tp_num, args.exp_name0, args.encoder_name0, \
+    #                     args.exp_name1, args.encoder_name1, epoch_idx=epoch_idx)
