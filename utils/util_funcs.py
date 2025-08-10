@@ -3,6 +3,7 @@ import numpy as np
 import os
 import random
 import math
+import pandas as pd
 from scipy.ndimage import measurements
 from skimage import morphology as morph
 import matplotlib.pyplot as plt
@@ -19,31 +20,92 @@ def rm_n_mkdir(dir_path):
     os.makedirs(dir_path)
 
 
-def draw_dilation(img, instance_mask, instance_type, label_colors):
+def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker):
     # Change type of image if necessarily
     if img.dtype == np.float64:
         img = img.astype(np.uint8)             # convert image to uint8
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR) # convert image from rgb to bgr
     img_overlay = img.copy()
 
-    instance_list = np.unique(instance_mask)[1:]
-    for instance in instance_list:
-        binary_map = np.zeros_like(img, dtype=np.uint8)
+    # instance_list = np.unique(instance_mask)[1:] # drop background, but find all other instances including nuclei with no label
+    # for instance in instance_list:
+    #     binary_map = np.zeros_like(img, dtype=np.uint8)
 
-        indexes = np.where(instance_mask == instance)
+    #     indexes = np.where(instance_mask == instance)
 
-        binary_map[indexes] = 255
-        kernal = np.ones((5, 5), np.uint8)
-        dilation = cv2.dilate(binary_map, kernal, iterations=1)
-        inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
+    #     binary_map[indexes] = 255
+    #     kernal = np.ones((5, 5), np.uint8)
+    #     dilation = cv2.dilate(binary_map, kernal, iterations=1)
+    #     inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
 
-        instance_tp = np.unique(instance_type[indexes])
-        assert len(instance_tp) == 1, "wrong instance type correspondence! "
-        img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]%len(label_colors))]
-        # print(f"instance_tp[0]: {instance_tp[0]}")
-        img_overlay[indexes] = img[indexes]
+    #     instance_tp = np.unique(instance_type[indexes])
+    #     assert len(instance_tp) == 1, "wrong instance type correspondence! "
+    #     if instance_tp[0] == 0: # If instance has no type label, exclude it from overlay
+    #         continue
+    #     else:
+    #         img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]-1)] # (instance_tp[0]-1) corrects for no label nuclei being removed from overlay
+    #         img_overlay[indexes] = img[indexes]
     
-    return img_overlay
+    pixel_per_type = {"1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0}
+    
+    if nuclei_marker == "fill":
+        instance_list = np.unique(instance_mask)[1:] # drop background, but find all other instances including nuclei with no label
+        for instance in instance_list:
+            binary_map = np.zeros_like(img, dtype=np.uint8)
+
+            indexes = np.where(instance_mask == instance)
+            
+            binary_map[indexes] = 255
+             # Count the number of pixels that are 255
+            count_255_pixels = np.sum(binary_map == 255)
+            
+            # Output the count
+            kernal = np.ones((5, 5), np.uint8)
+            dilation = cv2.dilate(binary_map, kernal, iterations=1)
+            inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
+            instance_tp = np.unique(instance_type[indexes])
+            # print(f'Instance {instance} of type {instance_tp[0]} has {count_255_pixels} pixels with value 255.')
+            assert len(instance_tp) == 1, "wrong instance type correspondence! "
+            if instance_tp[0] == 0: # If instance has no type label, exclude it from overlay
+                continue
+            else:
+                pixel_per_type[str(instance_tp[0])] += count_255_pixels
+                img_overlay[indexes] = label_colors[(instance_tp[0]-1)] # (instance_tp[0]-1) corrects for no label nuclei being removed from overlay       
+    
+    elif nuclei_marker == "border":
+        instance_list = np.unique(instance_mask)[1:] # drop background, but find all other instances including nuclei with no label
+        for instance in instance_list:
+            binary_map = np.zeros_like(img, dtype=np.uint8)
+
+            indexes = np.where(instance_mask == instance)
+
+            binary_map[indexes] = 255
+            kernal = np.ones((5, 5), np.uint8)
+            dilation = cv2.dilate(binary_map, kernal, iterations=1)
+            inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
+            instance_tp = np.unique(instance_type[indexes])
+            assert len(instance_tp) == 1, "wrong instance type correspondence! "
+            if instance_tp[0] == 0: # If instance has no type label, exclude it from overlay
+                continue
+            else:
+                img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]-1)] # (instance_tp[0]-1) corrects for no label nuclei being removed from overlay
+                img_overlay[indexes] = img[indexes]
+    # New keys
+    key_mapping = {"1" : "neutrophil",
+            "2" : "epithelial",
+            "3" : "lymphocyte",
+            "4" : "plasma",
+            "5" : "eosinophil",
+            "6" : "connective"}
+    # Create a new dictionary with the new keys
+    new_dict = {key_mapping.get(k, k): v for k, v in pixel_per_type.items()}
+    # pixel_count_df = pd.DataFrame(new_dict, index = ["pixels"])
+    return img_overlay, new_dict
 
 def draw_dilation_monusac(img, instance_mask):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
@@ -105,31 +167,37 @@ def visualize(imgs, ann, pred, output_dir, dataset):
     # ax.axis('off')  # Hide axis
     # plt.show()
 
-def visualize_no_gt(imgs, pred, output_dir, dataset):
-
+def visualize_no_gt(imgs, imgs_names, pred, output_dir, dataset, nuclei_marker):
     # Decide colors for visualization of nuclei based on datset used
     if dataset=="conic":
         print(f"Dataset in visualize: {dataset}")
         # BGR values used in color
-        colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
+        # colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
+        #         [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
+        # # color order nuclei: nolable (red), neutrophil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
+        colors = [[0,   0,   0], [255  ,   255, 0], 
                 [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
-        # color order nuclei: nolable (red), neutrphil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
+        # color order nuclei: neutrophil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
 
     elif dataset=="pannuke":
         print(f"Dataset in visualize: {dataset}")
         # BGR values used in color
-        colors = [[0  ,   0,   255], [255  ,   200, 0], [0, 255,   0], 
+        # colors = [[0  ,   0,   255], [255  ,   200, 0], [0, 255,   0], 
+        #         [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
+        # # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
+        colors = [[255  ,   200, 0], [0, 255,   0], 
                 [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
-        # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
+        # color order nuclei: neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
     
     os.makedirs(output_dir, exist_ok=True)
-    
+    pixel_count_list = []
     for img_idx, (img, mask_pred) in enumerate(zip(imgs, pred)):
-        overlay_pred = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors)
+        overlay_pred, pixel_count = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors, nuclei_marker)
+        pixel_count_list.append(pixel_count)
         img_to_write = overlay_pred
         img_to_write[:, -mask_pred.shape[1]:, :] = overlay_pred
         img_to_write = img_to_write.astype(np.uint8)  # Convert to uint8
-        output_path = f"{output_dir}/{img_idx}_overlay.png"
+        output_path = f"{output_dir}/overlay_{imgs_names[img_idx]}"
         cv2.imwrite(output_path, img_to_write)
     # Convert from BGR to RGB if necessary (OpenCV uses BGR by default)
     # img_to_write_rgb = cv2.cvtColor(img_to_write, cv2.COLOR_BGR2RGB)
@@ -141,6 +209,9 @@ def visualize_no_gt(imgs, pred, output_dir, dataset):
     # ax.imshow(img_to_write_rgb)
     # ax.axis('off')  # Hide axis
     # plt.show()
+
+    pixel_count_df = pd.DataFrame(pixel_count_list).fillna(0).astype(int)
+    return pixel_count_df
 
 def setup(rank, world_size, port='12353'):
     """
