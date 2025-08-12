@@ -1,4 +1,4 @@
-name: test_aughovernet
+name: aughovernet
 channels:
   - conda-forge
   - defaults
@@ -7,5 +7,5 @@ dependencies:
   - pip=24.1.2
   - openslide
   - pip:
-    - -r /home/jenny/Hover/aug_hover_net_fork/CONIC_Pathology_AI/requirements.txt
+    - -r /Users/tirilkt/Documents/studie/masteroppgave/CONIC_Pathology_AI/requirements.txt
     - openslide-python
