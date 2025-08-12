@@ -5,22 +5,15 @@ Training script for sparse training, with only loss of the ground truth labels
 import os
 import sys
 sys.path.append('./')
-# os.environ['TORCH_HOME'] = '/media/jenny/PRIVATE_USB/AugHoverData/all_pannuke_output/checkpoints'
-
-print("imported 1")
 import numpy as np
 import joblib
 from argparse import ArgumentParser
-print("imported 2")
 import torch
-print("imported 3")
 import torch.nn.functional as F
 import torch.distributed as dist
-print("imported 4")
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
 from torch import nn
-print("imported 5")
 
 from torch.utils.tensorboard import SummaryWriter
 print(torch.__version__)
@@ -29,16 +22,15 @@ print(torch.version.cuda)
 from datasets.dataset import CoNICDatasetPanMon
 import warnings
 warnings.filterwarnings("ignore")
-print("imported 6")
+
 import time
 from utils.util_funcs import setup, cleanup, run_function, rm_n_mkdir
 from models.model_head_aug import HoVerNetHeadExt
 from backbones.losses import SoftBCEWithLogitsLoss, MSGELoss, DiceLoss, FocalLoss, MSELoss, SoftCrossEntropyLoss
-print("imported 7")
 
 parser = ArgumentParser()
-# parser.add_argument("--lr", type=float, default=3e-3, help="learning rate")
-parser.add_argument("--lr", type=float, default=3e-4, help="learning rate")
+parser.add_argument("--lr", type=float, default=3e-3, help="learning rate")
+# parser.add_argument("--lr", type=float, default=3e-4, help="learning rate")
 parser.add_argument("--batch_size", type=int, default=4, help="batch size")
 parser.add_argument('--focal_loss', default=False, action='store_true')
 parser.add_argument('--scheduler', default=False, action='store_true')
@@ -56,22 +48,23 @@ args = parser.parse_args()
 print(f"args: {args}")
 
 def demo_basic(rank, world_size):
-    print("entered demo")
     """
     the base function to train with sparse labelling
     :param rank: rank of the thread
     :param world_size: total number of threads
     """
-    print("before setup")
     setup(rank, world_size, args.port)
-    print("after setup")
+
     if "pannuke" in args.name:
-        print("PANNUKE DETECTED")
+        print("Pannuke detected")
+        # Load images, perform augmentation, generate horizontal and vertical maps
         imagenet = CoNICDatasetPanMon(img_path=f"/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/pannuke_dataset/split_{args.split}/images_train.npy", 
                                                 ann_path=f"/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/pannuke_dataset/split_{args.split}/labels_train.npy",
                                       input_shape=(256, 256), mask_shape=(256, 256))
         num_types = 6
     elif "monusac" in args.name:
+        print("Monusac detected")
+        # Load images, perform augmentation, generate horizontal and vertical maps
         imagenet = CoNICDatasetPanMon(img_path="data_monusac/images_train.npy", ann_path="data_monusac/labels_train.npy",
                                     input_shape=(256, 256), mask_shape=(256, 256))
         num_types = 5
@@ -82,12 +75,11 @@ def demo_basic(rank, world_size):
         rm_n_mkdir("logs/{}".format(args.name))
         writer = SummaryWriter("logs/{}".format(args.name))
         print("len of training set: ", len(imagenet))
-    print("before sampler")
     sampler = DistributedSampler(imagenet)
-    print("after sampler")
+    print("Sampler loaded")
     imagenet_dataloader = torch.utils.data.DataLoader(dataset=imagenet, batch_size=args.batch_size,
                                                       num_workers=1, sampler=sampler)
-    print("before model")
+    
     model = HoVerNetHeadExt(num_types=num_types, freeze=False, pretrained_backbone=args.pretrained_path, encoder_name=args.encoder_name)
     # model = create_model()
     model = model.to(rank)
