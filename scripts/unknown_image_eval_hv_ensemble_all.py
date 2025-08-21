@@ -30,12 +30,12 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     
     # Checkpoint path for seresnext50
     # checkpoint_path0 = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_checkpoints_trained/checkpoints/batch_size_8/{exp_name0}/improved-net_{epoch_idx}.pt"
-    checkpoint_path0 = f"/media/jenny/Expansion/Conic_weights/checkpoints/{exp_name0}/improved-net_{epoch_idx}.pt"
+    checkpoint_path0 = f"/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/CONIC_checkpoints/checkpoints/{exp_name0}/improved-net_{epoch_idx}.pt"
     segmentation_model0 = HoVerNetHeadExt(num_types, encoder_name=encoder_name0, pretrained_backbone=None)
     
     # Checkpoint path for seresnext101
     # checkpoint_path1 = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_checkpoints_trained/checkpoints/batch_size_8/{exp_name1}/improved-net_{epoch_idx}.pt"
-    checkpoint_path1 = f"/media/jenny/Expansion/Conic_weights/checkpoints/{exp_name1}/improved-net_{epoch_idx}.pt"
+    checkpoint_path1 = f"/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/CONIC_checkpoints/checkpoints/{exp_name1}/improved-net_{epoch_idx}.pt"
     segmentation_model1 = HoVerNetHeadExt(num_types, encoder_name=encoder_name1, pretrained_backbone=None)
     
     print(f"===================parameter counts: {count_parameters(segmentation_model0) + count_parameters(segmentation_model1)}=====")
@@ -52,32 +52,23 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     segmentation_model1.eval()                       # Set module in evaluation mode
     np_results, hv_results, tp_results = [], [], []
     imgs_valid = imgs_load_array[valid_indices] 
-
     print(f"valid_indices: {valid_indices}")
     
     for idx, img, patch_mask_binary in tqdm(zip(valid_indices, imgs_valid, patch_mask_binary), total=len(valid_indices)):
     
-        # Apply mask to the patch (e.g., zero out excluded pixels)
-        # masked_patch = img * patch_mask_binary
-        masked_patch = img
+        # Apply mask to the patch (set pixels in tissue fold to white)
+        img[patch_mask_binary.squeeze() == 0] = [255, 255, 255]
        
         # Assuming imgs_valid contains the images in the desired format:
         # Here we normalize the image and prepare for PyTorch tensor conversion
-        masked_patch = masked_patch[None, :, :, :] / 255.  # Normalize the image to [0, 1]
+        img = img[None, :, :, :] / 255.  # Normalize the image to [0, 1]
         
-        img_tensor = torch.tensor(masked_patch)  
-    
+        img_tensor = torch.tensor(img)   
         # img_tensor = img_tensor.unsqueeze(0)  # This adds a batch dimension
         # print(f"Shape after unsqueeze: {img_tensor.shape}")
         np_map0, hv_map0, tp_map0 = segmentation_model0.infer_batch_inner_ensemble(segmentation_model0, img_tensor, True, idx=idx, encoder_name="seresnext50")
         np_map1, hv_map1, tp_map1 = segmentation_model1.infer_batch_inner_ensemble(segmentation_model1, img_tensor, True, idx=idx, encoder_name="seresnext101")
-        
-        
-        for name, module in segmentation_model0.named_modules():
-            if isinstance(module, torch.nn.BatchNorm2d):  # For 2D BatchNorm layers
-                print(f"{name} running_mean: {module.running_mean}")
-                print(f"{name} running_var: {module.running_var}")
-        
+
         np_map = (np_map0[0] + np_map1[0]) / 2
         hv_map = (hv_map0[0] + hv_map1[0]) / 2
         tp_map = (tp_map0[0] + tp_map1[0]) / 2
@@ -111,19 +102,16 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     pixel_count_df.insert(0, column_name, column_values)
     # Print and save the dataframe
     print(pixel_count_df)
-    pixel_count_df.to_csv(output_dir_dataframe_p)
-
-
+    pixel_count_df.to_csv(output_dir_dataframe_p, index=False)
+    
 def read_images(tile_path: str | Path):
     """
     Load all images and output them as a sorted array.
     """
-
     image_list = glob.glob(tile_path + '*.png')     # Finds all images with .png extension
     image_list = natsorted(image_list)              # Sorts the images naturally
     # Extract only the image names from the paths
     image_names = [os.path.basename(image) for image in image_list]
-    
     imgs_load_list = []
     # Loop through all images
     for i in range(len(image_list)):
@@ -152,14 +140,14 @@ def read_mask(tile_path: str | Path):
         image = cv2.imread(image_fetch)             # Load the image
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # imgs_load = np.array(image)  
-        imgs_binary = (image != 255).astype(np.uint8) 
+        imgs_binary = (image != 255).astype(np.uint8)  # Black pixels set to 1 and white pixels set to 0
         imgs_binary = imgs_binary[:, :, np.newaxis]  # Apply on each channel
-        print(f"imgs_mask shape: {imgs_binary.shape}") # Convert the image to a NumPy array
         imgs_load_list.append(imgs_binary)
     mask_load_array = np.array(imgs_load_list)
     print(f"Loaded array of masks with shape: {imgs_load_array.shape}")
     
     return mask_load_array
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -173,7 +161,22 @@ if __name__ == "__main__":
     # parser.add_argument('--exp_name1', type=str, default='hover_paper_pannuke_seresnext101')
     parser.add_argument('--exp_name1', type=str, default='hover_paper_conic_seresnext101_00')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
-
+    
+    parser.add_argument("--nuclei_marker", choices = ["border", "fill"], default="border", help ="Choose how you want nuclei to be marked in overlay. Choose either 'border' or 'fill' (default: %(default)s)" )
+    # nuclei_marker = "fill"    # If you want the whole nuclei colored
+    # nuclei_marker = "border"  # If you only want the nuclei border/outline marked
+    
+    parser.add_argument("--tile_path", type=str, required=True, help = "Path to images you want analyzed")
+    # tile_path = "/.../patches/HE_xxx/"
+    parser.add_argument("--mask_path", type=str, required=True, help = "Path to binary masks") 
+    # mask_path = "/.../masks/HE_xxx/" 
+    parser.add_argument("--output_dir_dataframe", type=Path, required=True, help = "Output directory for dataframe") 
+    # output_dir_dataframe = Path("/.../Output/patches/HE_xxx/counts/")
+    parser.add_argument("--output_dir_dataframe_p", type=Path, required=True, help = "Output directory for dataframe counting number of pixels for each type of nucleus")  
+    # output_dir_dataframe_p = Path("/.../Output/patches/HE_xxx/count_pixels/")
+    parser.add_argument("--output_dir", type=str, required=True, help = "Output directory for overlay images")  
+    # output_dir = "/.../Output/patches/HE_xxx/overlay/"
+    
     args = parser.parse_args()
     
     # Ensures correct parameters for chosen weights 
@@ -189,40 +192,32 @@ if __name__ == "__main__":
     # Choose epoch you want to retrieve weights from
     epoch_idx = 49
     
-    # Choose how you want nuclei to be marked in overlay
-    nuclei_marker = "fill"    # If you want the whole nuclei colored
-    # nuclei_marker = "border"  # If you only want the nuclei border/outline marked
-    
-    # Path to images you want analyzed
-    tile_path = "/media/jenny/Expansion/MM_HE_patches/HE_MM009_B_270125/aughovernet/extra_patch/" 
+    tile_path = args.tile_path
     # Extract array of images and image names
     imgs_load_array, image_names = read_images(tile_path)
     
-    # Path to binary masks 
-    mask_path = "/media/jenny/Expansion/MM_HE_patches/HE_MM009_B_270125/aughovernet/extra/" 
     # Extract array of masks
-    patch_mask_binary = read_mask(mask_path)
+    patch_mask_binary = read_mask(args.mask_path)
 
-    # Output directory for dataframe counting number of nuclei
-    output_dir_dataframe = Path("/media/jenny/Expansion/MM_HE_patches/HE_MM009_B_270125/aughovernet/debug_change_no_mask/tiles_result_csv_8/")
-    if not output_dir_dataframe.exists(): 
-        output_dir_dataframe.mkdir(parents=True)
-        print(f"Directory {output_dir_dataframe} was created")
-    output_dir_dataframe = os.path.join(output_dir_dataframe, f"nuclei_counts.csv")
+    # Extracting numbers using string manipulation
+    numbers = [int(name.split('_')[1].split('.')[0]) for name in image_names]
+    # Create directory if it doesn't exist
+    if not args.output_dir_dataframe.exists(): 
+        args.output_dir_dataframe.mkdir(parents=True)
+        print(f"Directory {args.output_dir_dataframe} was created")
+    output_dir_dataframe = os.path.join(args.output_dir_dataframe, f"nuclei_counts_from_{numbers[0]}_to_{numbers[-1]}.csv")
     
-    # Output directory for dataframe counting number of pixels for each type of nucleus 
-    output_dir_dataframe_p = Path("/media/jenny/Expansion/MM_HE_patches/HE_MM009_B_270125/aughovernet/debug_change/tiles_result_pixels_csv_8/")
-    if not output_dir_dataframe_p.exists(): 
-        output_dir_dataframe_p.mkdir(parents=True)
-        print(f"Directory {output_dir_dataframe_p} was created")
-    output_dir_dataframe_p = os.path.join(output_dir_dataframe_p, f"pixel_count.csv")
-    
+    # Create directory if it doesn't exist
+    if not args.output_dir_dataframe_p.exists(): 
+        args.output_dir_dataframe_p.mkdir(parents=True)
+        print(f"Directory {args.output_dir_dataframe_p} was created")
+    output_dir_dataframe_p = os.path.join(args.output_dir_dataframe_p, f"pixel_count_from_{numbers[0]}_to_{numbers[-1]}.csv")
+
     # Output directory for overlay images (will be automatically created when used as input in visualize_no_gt() if it doesn't already exist)
-    output_dir = "/media/jenny/Expansion/MM_HE_patches/HE_MM009_B_270125/aughovernet/debug_change/tiles_result_8/"
-    
+
     eval_models(imgs_load_array, image_names, num_types, \
                 args.exp_name0, args.encoder_name0, \
                 args.exp_name1, args.encoder_name1, \
-                epoch_idx=epoch_idx, dataset=dataset, output_dir=output_dir, output_dir_dataframe=output_dir_dataframe, output_dir_dataframe_p = output_dir_dataframe_p, nuclei_marker=nuclei_marker, patch_mask_binary = patch_mask_binary)
+                epoch_idx=epoch_idx, dataset=dataset, output_dir=args.output_dir, output_dir_dataframe=output_dir_dataframe, output_dir_dataframe_p = output_dir_dataframe_p, nuclei_marker=args.nuclei_marker, patch_mask_binary = patch_mask_binary)
     
     
