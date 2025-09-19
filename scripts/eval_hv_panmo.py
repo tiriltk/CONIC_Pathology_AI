@@ -106,7 +106,8 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
 def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name, encoder_name, epoch_idx=30):
     valid_indices = range(len(imgs_load))
 
-    checkpoint_path = f"checkpoints/{exp_name}/improved-net_{epoch_idx}.pt"
+    #checkpoint_path = f"checkpoints/{exp_name}/improved-net_{epoch_idx}.pt"
+    checkpoint_path = args.checkpoint
     segmentation_model = HoVerNetHeadExt(num_types=tp_num, encoder_name=encoder_name, pretrained_backbone=None)
     
     state_dict = torch.load(checkpoint_path)
@@ -145,6 +146,7 @@ if __name__ == "__main__":
     parser.add_argument('--exp_name', type=str, default='hover_paper_eight_axis_pannuke')
     parser.add_argument("--model", type=str, default="hovernet")
     parser.add_argument("--encoder_name", type=str, default="seresnext50_32x4d")
+    parser.add_argument("--checkpoint", type=str, default=None, help="path til checkpoint")
     args = parser.parse_args()
 
     tp_num = 7

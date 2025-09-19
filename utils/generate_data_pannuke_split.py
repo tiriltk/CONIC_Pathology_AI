@@ -41,7 +41,7 @@ def remap_label(pred, by_size=False):
 
 def pannuke(split=0, test=False):
     print("========================================")
-    
+    print(split)
     if test:
         split = (split + 2) % 3
 
@@ -50,8 +50,8 @@ def pannuke(split=0, test=False):
 
     print("Loading data")
 
-    images_this = np.load(f"/home/jenny/pannuke_dataset/Fold_{split+1}/images/images.npy", mmap_mode='r')
-    masks_this = np.load(f"/home/jenny/pannuke_dataset/Fold_{split+1}/masks/masks.npy", mmap_mode='r')
+    images_this = np.load(f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/Fold_{split+1}/images/images.npy", mmap_mode='r')
+    masks_this = np.load(f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/Fold_{split+1}/masks/masks.npy", mmap_mode='r')
 
     print("Loaded data, starting iteration")
 
@@ -80,9 +80,13 @@ def pannuke(split=0, test=False):
     print("images_train shape: ", images_train.shape)
 
     labels_train = np.array(labels_train)
-    print("labels_train shape: ", labels_train.shape)
 
-    os.makedirs(f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{split}/", exist_ok=True)
+    print("labels_train shape: ", labels_train.shape)
+    print(split)
+    path = f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/pannuke_datasets/split_{split}/"
+    os.makedirs(path, exist_ok=True)
+    print("Directory exists now:", os.path.exists(path))
+    print(path)
 
     if test:
         train_test = "test"
@@ -92,18 +96,16 @@ def pannuke(split=0, test=False):
     # images_to_lean = np.load(f"/data/teacher/workspace/csbj/HoVerNet-JBHI/data_pannuke/images_{train_test}.npy")
     # print("images_to_learn shape: ", images_to_lean.shape)
 
-    np.save(f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{split}/images_{train_test}.npy", images_train)
-    np.save(f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{split}/labels_{train_test}.npy", labels_train)
+    np.save(f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/pannuke_datasets/split_{split}/images_{train_test}.npy", images_train)
+    np.save(f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/pannuke_datasets/split_{split}/labels_{train_test}.npy", labels_train)
     
-                
                 
 
 if __name__ == "__main__":
-    pannuke(split=0, test=False)
-    pannuke(split=1, test=False)
-    pannuke(split=2, test=False)
+    #pannuke(split=0, test=False)
+    #pannuke(split=1, test=False)
+    #pannuke(split=2, test=False)
 
-    pannuke(split=0, test=True)
-    pannuke(split=1, test=True)
-    pannuke(split=2, test=True)
-    
+    #pannuke(split=0, test=True)
+    #pannuke(split=1, test=True)
+    #pannuke(split=2, test=True)

@@ -7,5 +7,5 @@ dependencies:
   - pip=24.1.2
   - openslide
   - pip:
-    - -r /Users/tirilkt/Documents/studie/masteroppgave/CONIC_Pathology_AI/requirements.txt
+    - -r /cluster/projects/nn12036k/tirilktr/CONIC_Pathology_AI/requirements.txt
     - openslide-python

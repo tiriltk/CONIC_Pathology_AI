@@ -29,20 +29,20 @@ from models.model_head_aug import HoVerNetHeadExt
 from backbones.losses import SoftBCEWithLogitsLoss, MSGELoss, DiceLoss, FocalLoss, MSELoss, SoftCrossEntropyLoss
 
 parser = ArgumentParser()
-parser.add_argument("--lr", type=float, default=3e-3, help="learning rate")
-# parser.add_argument("--lr", type=float, default=3e-4, help="learning rate")
+parser.add_argument("--lr", type=float, default=0.0003, help="learning rate")
 parser.add_argument("--batch_size", type=int, default=4, help="batch size")
 parser.add_argument('--focal_loss', default=False, action='store_true')
-parser.add_argument('--scheduler', default=False, action='store_true')
+parser.add_argument('--scheduler', default=True, action='store_true')
 parser.add_argument('--split', type=int, default=0)
 parser.add_argument("--name", type=str, default="hover_paper_pannuke_seresnext50", help="name of experiment")
 parser.add_argument("--encoder_name", type=str, default="seresnext50", help="name of the encoder")
 parser.add_argument("--max_epoch", type=int, default=50, help="max epoch number")
-parser.add_argument('--port', type=str, default="12353", help="port of the distributed training")
+parser.add_argument('--port', type=str, default="49152", help="port of the distributed training")
 parser.add_argument("--augments", type=str, default="aug/aug_0.txt", help="augment file name")
+parser.add_argument("--run", type = int, default = 0, help ="run number")
 parser.add_argument('--pretrained_path', type=str, 
-                default="/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/pretrained/se_resnext50_32x4d-a260b3a4.pth", 
-                # default="/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/pretrained/se_resnext50_32x4d-a260b3a4.pth",
+                default="/cluster/projects/nn12036k/tirilktr/pretrained/se_resnext50_32x4d-a260b3a4.pth", 
+                # default="/cluster/projects/nn12036k/tirilktr/pretrained/se_resnext101_32x4d-3b2fe3d8.pth",
                 help="pretrained weights")
 args = parser.parse_args()
 print(f"args: {args}")
@@ -58,22 +58,25 @@ def demo_basic(rank, world_size):
     if "pannuke" in args.name:
         print("Pannuke detected")
         # Load images, perform augmentation, generate horizontal and vertical maps
-        imagenet = CoNICDatasetPanMon(img_path=f"/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/pannuke_dataset/split_{args.split}/images_train.npy", 
-                                                ann_path=f"/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/pannuke_dataset/split_{args.split}/labels_train.npy",
+        imagenet = CoNICDatasetPanMon(img_path=f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/images_train.npy", 
+                                                ann_path=f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/labels_train.npy",
                                       input_shape=(256, 256), mask_shape=(256, 256))
         num_types = 6
     elif "monusac" in args.name:
         print("Monusac detected")
         # Load images, perform augmentation, generate horizontal and vertical maps
-        imagenet = CoNICDatasetPanMon(img_path="data_monusac/images_train.npy", ann_path="data_monusac/labels_train.npy",
-                                    input_shape=(256, 256), mask_shape=(256, 256))
-        num_types = 5
+        #imagenet = CoNICDatasetPanMon(img_path="/cluster/projects/nn12036k/tirilktr/datasets/monuseg/tissue_images_npy/train_images.npy", ann_path="data_monusac/labels_train.npy",
+                                    #input_shape=(256, 256), mask_shape=(256, 256))
+        #num_types = 5
     
     if rank == 0:
         print("RANK==0")
         print(args.name)
-        rm_n_mkdir("logs/{}".format(args.name))
-        writer = SummaryWriter("logs/{}".format(args.name))
+        #rm_n_mkdir("logs/{}".format(args.name))
+        #writer = SummaryWriter("logs/{}".format(args.name))
+        log_dir = f"logs/{args.name}/{args.encoder_name}/split_{args.split}/bs{args.batch_size}_epochs{args.max_epoch}_lr{args.lr}/run_{args.run}"
+        os.makedirs(log_dir, exist_ok=True)
+        writer = SummaryWriter(log_dir)
         print("len of training set: ", len(imagenet))
     sampler = DistributedSampler(imagenet)
     print("Sampler loaded")
@@ -87,7 +90,9 @@ def demo_basic(rank, world_size):
     ddp_model = DDP(ddp_model, device_ids=[rank], find_unused_parameters=True)
 
     optimizer = torch.optim.Adam(ddp_model.module.parameters(), lr=args.lr)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30, 40], gamma=0.1)
+    milestones = list(range(40, args.max_epoch, 10)) 
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
+    #scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30, 40], gamma=0.1)
 
     soft_bce_loss = SoftBCEWithLogitsLoss()
 
@@ -168,12 +173,19 @@ def demo_basic(rank, world_size):
                 writer.add_scalar('Loss/loss_focal_sum', loss_focal_sum / len(imagenet), epoch_idx)
 
             # check point save   
-            os.makedirs("/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/all_pannuke_output/checkpoints/{}".format(args.name), exist_ok=True)
+            # os.makedirs("/cluster/projects/nn12036k/tirilktr/pannuke_output/checkpoints/{}/bs{}_epochs{}_lr{}/run_{}/".format(args.encoder_name, args.batch_size, args.max_epoch, args.lr, args.run), exist_ok=True)
+            # if epoch_idx > 30:
+            #     checkpoint_path = "/cluster/projects/nn12036k/tirilktr/pannuke_output/checkpoints/seresnext50/bs{}_epochs{}_lr{}/run_{}/improved-net_{}.pt".format(args.run, args.batch_size, args.max_epoch, args.lr, epoch_idx)
+            #     torch.save(ddp_model.module.state_dict(), checkpoint_path)
+            # checkpoint_path = "/cluster/projects/nn12036k/tirilktr/pannuke_output/checkpoints/seresnext50/bs{}_epochs{}_lr{}/run_{}/improved-net_latest.pt".format(args.run, args.batch_size, args.max_epoch, args.lr)
+            # torch.save(ddp_model.module.state_dict(), checkpoint_path)
+
+            ckpt_dir = f"/cluster/projects/nn12036k/tirilktr/pannuke_output/checkpoints/{args.encoder_name}/split_{args.split}/bs{args.batch_size}_epochs{args.max_epoch}_lr{args.lr}/run_{args.run}"
+            os.makedirs(ckpt_dir, exist_ok=True)
             if epoch_idx > 30:
-                checkpoint_path = "/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/all_pannuke_output/checkpoints/{}/improved-net_{}.pt".format(args.name, epoch_idx)
-                torch.save(ddp_model.module.state_dict(), checkpoint_path)
-            checkpoint_path = "/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/all_pannuke_output/checkpoints/{}/improved-net_latest.pt".format(args.name)
-            torch.save(ddp_model.module.state_dict(), checkpoint_path)
+                torch.save(ddp_model.module.state_dict(), f"{ckpt_dir}/improved-net_{epoch_idx}.pt")
+            torch.save(ddp_model.module.state_dict(), f"{ckpt_dir}/improved-net_latest.pt")
+
 
         dist.barrier()
 

@@ -128,7 +128,7 @@ def draw_dilation_monusac(img, instance_mask):
     return img_overlay
 
 
-def visualize(imgs, ann, pred, output_dir, dataset):
+def visualize(imgs, ann, pred, output_dir, dataset, nuclei_marker):
     
     # Decide colors for visualization of nuclei based on datset used
     if dataset=="conic":
@@ -145,16 +145,16 @@ def visualize(imgs, ann, pred, output_dir, dataset):
                 [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
         # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
     
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(f"{output_dir}/images/", exist_ok=True)
     
     for img_idx, (img, mask_gt, mask_pred) in enumerate(zip(imgs, ann, pred)):
-        overlay_gt = draw_dilation(img, mask_gt[:, :, 0], mask_gt[:, :, 1], colors)
-        overlay_pred = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors)
+        overlay_gt, pixel_count = draw_dilation(img, mask_gt[:, :, 0], mask_gt[:, :, 1], colors, nuclei_marker)
+        overlay_pred, pixel_count = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors, nuclei_marker)
         img_to_write = np.zeros((mask_gt.shape[0], 2*mask_gt.shape[1]+5, 3))
         img_to_write[:, :mask_gt.shape[1], :] = overlay_gt
         img_to_write[:, -mask_gt.shape[1]:, :] = overlay_pred
         img_to_write = img_to_write.astype(np.uint8)  # Convert to uint8
-        output_path = f"{output_dir}/{1000+ img_idx}_overlay.png"
+        output_path = f"{output_dir}/images/{img_idx}_overlay.png"
         cv2.imwrite(output_path, img_to_write)
     # Convert from BGR to RGB if necessary (OpenCV uses BGR by default)
     # img_to_write_rgb = cv2.cvtColor(img_to_write, cv2.COLOR_BGR2RGB)

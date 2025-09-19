@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append('./')
-os.environ['TORCH_HOME'] = '/media/jenny/PRIVATE_USB/AugHoverData/cache'
+#os.environ['TORCH_HOME'] = '/media/jenny/PRIVATE_USB/AugHoverData/cache'
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 import numpy as np
 import pandas as pd
@@ -16,11 +16,12 @@ warnings.filterwarnings("ignore")
 import torch
 from utils.stats_utils import get_pq, get_multi_pq_info, get_multi_r2
 from models.model_head_aug import HoVerNetHeadExt
-# from utils.visualize_gt import visualize
+#from utils.visualize_gt import visualize
 from utils.util_funcs import visualize
 from utils.eval_utils import prepare_ground_truth, prepare_results, convert_pytorch_checkpoint
 # from torchmetrics.functional import dice 
 from torchmetrics.segmentation import DiceScore    
+
 
 def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, num_types=0):
 
@@ -120,21 +121,21 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
     print("before dataframe")
     df = pd.DataFrame(all_metrics)
     print("after dataframe")
-    os.makedirs(f"{out_dir}/results", exist_ok=True)
-    df = df.to_csv(f"{out_dir}/results/{epoch_idx}.csv", index=False)
+    os.makedirs(f"{out_dir}", exist_ok=True)
+    df = df.to_csv(f"{out_dir}/{epoch_idx}.csv", index=False)
 
 
-def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, epoch_idx=41):
+def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, out_dir, nuclei_marker, epoch_idx=79):
     valid_indices = range(len(imgs_load))
 
-    checkpoint_path0 = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_checkpoints_trained/checkpoints/batch_size_8/{exp_name0}/improved-net_{epoch_idx}.pt"
+    checkpoint_path0 = f"{args.checkpoint0}/improved-net_{epoch_idx}.pt"
     print(f"checkpoint_path0: {checkpoint_path0}")
     segmentation_model0 = HoVerNetHeadExt(num_types=tp_num, encoder_name=encoder_name0, pretrained_backbone=None)
 
-    checkpoint_path1 = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_checkpoints_trained/checkpoints/batch_size_8/{exp_name1}/improved-net_{epoch_idx}.pt"
+    checkpoint_path1 = f"{args.checkpoint1}/improved-net_{epoch_idx}.pt"
     print(f"checkpoint_path1: {checkpoint_path1}")
     segmentation_model1 = HoVerNetHeadExt(num_types=tp_num, encoder_name=encoder_name1, pretrained_backbone=None)
-    
+
     state_dict = torch.load(checkpoint_path0)
     segmentation_model0.load_state_dict(state_dict)
     segmentation_model0 = segmentation_model0.to(0)
@@ -181,16 +182,19 @@ def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, e
     
     # visualize(imgs_array_gt, labels_array_gt, labels_array_pred,f"visualize/overlay_{dataset_name}")
     eval_func(labels_array_gt, labels_array_pred, \
-            nuclei_counts_df_gt, nuclei_counts_df_pred, f"/media/jenny/PRIVATE_USB/AugHoverData/all_pannuke_output/eval_func/batch_size_8_eval_fold_0_part3_1/{dataset_name}_ensemble_all/{FOLD_IDX:02d}", epoch_idx, num_types=tp_num)
+            nuclei_counts_df_gt, nuclei_counts_df_pred, out_dir, epoch_idx, num_types=tp_num)
     
     # if epoch_idx==49:
     #     output_dir = "/media/jenny/PRIVATE_USB/AugHoverData/all_pannuke_output/output_dir/batch_size_8_part3/"
-    #     visualize(imgs_array_gt, labels_array_gt , labels_array_pred , output_dir)
+    visualize(imgs_array_gt, labels_array_gt , labels_array_pred , out_dir, dataset_name, nuclei_marker)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--split', type=int, default='0')
+    parser.add_argument('--split', type=int, default=0)
     parser.add_argument("--model", type=str, default="hovernet")
+
+    #setting nuclei marker
+    parser.add_argument('--nuclei_marker', type = str, default = 'border')
 
     # parser.add_argument('--exp_name0', type=str, default='conic_seresnext50')
     # parser.add_argument("--encoder_name0", type=str, default="seresnext50")
@@ -202,6 +206,15 @@ if __name__ == "__main__":
     parser.add_argument('--exp_name1', type=str, default='hover_paper_pannuke_seresnext101')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
 
+     # parser argument for setting epoch
+    parser.add_argument("--set_epoch", type=int, default = 79, help = "setting epoch")
+    # parser argument for out dir path
+    parser.add_argument("--output_directory", type=str, required=True, help="output directory")
+    #ex: "/cluster/projects/nn12036k/tirilktr/pannuke_output/validation_test/xxx/"
+
+    # parser argument for path til checkpoint fil
+    parser.add_argument("--checkpoint0", type=str, required=True, help="Path til checkpoint fil for model 0")
+    parser.add_argument("--checkpoint1", type=str, required=True, help="Path til checkpoint fil for model 1")
 
     args = parser.parse_args()
 
@@ -212,8 +225,8 @@ if __name__ == "__main__":
         ann_path = "data_monusac/labels_test.npy"
         tp_num = 5
     elif "pannuke" in args.exp_name0:
-        img_path = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{args.split}/images_test.npy"
-        ann_path = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_dataset/split_{args.split}/labels_test.npy"
+        img_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/images_test.npy"
+        ann_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/labels_test.npy"
         tp_num = 6
     
     # used mmap to decrease memory demand
@@ -224,10 +237,11 @@ if __name__ == "__main__":
     # imgs_load= imgs_load[1000:1500]
     # print(f"imgs_load_shape:{imgs_load.shape}")
 
-    epoch_idx=49
+    epoch_idx=args.set_epoch
     eval_models(args.split, imgs_load, labels, tp_num, args.exp_name0, args.encoder_name0, \
-                    args.exp_name1, args.encoder_name1, epoch_idx=epoch_idx)
+                    args.exp_name1, args.encoder_name1, out_dir=args.output_directory, nuclei_marker=args.nuclei_marker, epoch_idx=epoch_idx)
 
     # for epoch_idx in range(40, 50):
     #     eval_models(args.split, imgs_load, labels, tp_num, args.exp_name0, args.encoder_name0, \
     #                     args.exp_name1, args.encoder_name1, epoch_idx=epoch_idx)
+
