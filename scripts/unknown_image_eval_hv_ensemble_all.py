@@ -24,23 +24,26 @@ from PIL import Image
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, output_dir, output_dir_dataframe, output_dir_dataframe_p,patch_mask_binary, epoch_idx=49, dataset="conic", nuclei_marker="fill"):
-
-    valid_indices = range(len(imgs_load_array-1 ))
+def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, output_dir, output_dir_dataframe, output_dir_dataframe_p, patch_mask_binary, checkpoint0, checkpoint1, epoch_idx=79, dataset="pannuke", nuclei_marker="fill"):
+    valid_indices = range(len(imgs_load_array))
+    #valid_indices = range(len(imgs_load_array-1 ))
     
     # Checkpoint path for seresnext50
-    # checkpoint_path0 = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_checkpoints_trained/checkpoints/batch_size_8/{exp_name0}/improved-net_{epoch_idx}.pt"
-    checkpoint_path0 = f"/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/CONIC_checkpoints/checkpoints/{exp_name0}/improved-net_{epoch_idx}.pt"
-    segmentation_model0 = HoVerNetHeadExt(num_types, encoder_name=encoder_name0, pretrained_backbone=None)
+    checkpoint_path0 = os.path.join(checkpoint0, f"improved-net_{epoch_idx}.pt")
+    segmentation_model0 = HoVerNetHeadExt(num_types=tp_num, encoder_name=encoder_name0, pretrained_backbone=None)
+    #checkpoint_path0 = f"{args.checkpoint0}/improved-net_{epoch_idx}.pt"
+    #segmentation_model0 = HoVerNetHeadExt(num_types, encoder_name=encoder_name0, pretrained_backbone=None)
     
     # Checkpoint path for seresnext101
-    # checkpoint_path1 = f"/media/jenny/PRIVATE_USB/AugHoverData/pannuke_checkpoints_trained/checkpoints/batch_size_8/{exp_name1}/improved-net_{epoch_idx}.pt"
-    checkpoint_path1 = f"/cluster/projects/nn12036k/jmfinsru/data_files/aug_hovernet/CONIC_checkpoints/checkpoints/{exp_name1}/improved-net_{epoch_idx}.pt"
-    segmentation_model1 = HoVerNetHeadExt(num_types, encoder_name=encoder_name1, pretrained_backbone=None)
+    checkpoint_path1 = os.path.join(checkpoint1, f"improved-net_{epoch_idx}.pt")
+    segmentation_model1 = HoVerNetHeadExt(num_types=tp_num, encoder_name=encoder_name1, pretrained_backbone=None)
+    #checkpoint_path1 = f"{args.checkpoint1}/improved-net_{epoch_idx}.pt"
+    #segmentation_model1 = HoVerNetHeadExt(num_types, encoder_name=encoder_name1, pretrained_backbone=None)
     
     print(f"===================parameter counts: {count_parameters(segmentation_model0) + count_parameters(segmentation_model1)}=====")
     print(f"===================parameter counts: {count_parameters(segmentation_model0)} ")
     print(f"===================parameter counts: {count_parameters(segmentation_model1)} ")
+
     state_dict = torch.load(checkpoint_path0)        # Load checkpoints
     segmentation_model0.load_state_dict(state_dict)
     segmentation_model0 = segmentation_model0.to(0)
@@ -52,6 +55,7 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     segmentation_model1.eval()                       # Set module in evaluation mode
     np_results, hv_results, tp_results = [], [], []
     imgs_valid = imgs_load_array[valid_indices] 
+
     print(f"valid_indices: {valid_indices}")
     
     for idx, img, patch_mask_binary in tqdm(zip(valid_indices, imgs_valid, patch_mask_binary), total=len(valid_indices)):
@@ -63,8 +67,9 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
         # Here we normalize the image and prepare for PyTorch tensor conversion
         img = img[None, :, :, :] / 255.  # Normalize the image to [0, 1]
         
-        img_tensor = torch.tensor(img)   
-        # img_tensor = img_tensor.unsqueeze(0)  # This adds a batch dimension
+        #img_tensor = torch.tensor(img)   
+        img_tensor = torch.from_numpy(img).float().to(0)
+
         # print(f"Shape after unsqueeze: {img_tensor.shape}")
         np_map0, hv_map0, tp_map0 = segmentation_model0.infer_batch_inner_ensemble(segmentation_model0, img_tensor, True, idx=idx, encoder_name="seresnext50")
         np_map1, hv_map1, tp_map1 = segmentation_model1.infer_batch_inner_ensemble(segmentation_model1, img_tensor, True, idx=idx, encoder_name="seresnext101")
@@ -87,7 +92,7 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     print(f"img_tensor.shape[3]: {img_tensor.shape[3]}")
     
     # Extract results
-    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = prepare_results(np_results, hv_results, tp_results, segmentation_model0, patch_shape=[img_tensor.shape[1],img_tensor.shape[2]])
+    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = prepare_results(np_results, hv_results, tp_results, segmentation_model0, patch_shape=[img_tensor.shape[1],img_tensor.shape[2]], tp_num = tp_num, dataset = dataset)
     
     # Insert column with patch number for each result
     column_name = "patch_nbr"
@@ -104,11 +109,12 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     print(pixel_count_df)
     pixel_count_df.to_csv(output_dir_dataframe_p, index=False)
     
-def read_images(tile_path: str | Path):
+def read_images(tile_path: str):
     """
     Load all images and output them as a sorted array.
     """
     image_list = glob.glob(tile_path + '*.png')     # Finds all images with .png extension
+    image_list = [p for p in image_list if not os.path.basename(p).startswith('._')] 
     image_list = natsorted(image_list)              # Sorts the images naturally
     # Extract only the image names from the paths
     image_names = [os.path.basename(image) for image in image_list]
@@ -122,21 +128,23 @@ def read_images(tile_path: str | Path):
         imgs_load_list.append(imgs_load)
     imgs_load_array = np.array(imgs_load_list)
     print(f"Loaded array of images with shape: {imgs_load_array.shape}")
-    
     return imgs_load_array, image_names
 
-def read_mask(tile_path: str | Path):
+def read_mask(tile_path: str):
     """
     Load all masks and output them as a sorted array.
     """
+    mask_list = glob.glob(tile_path + '*.png')
+    mask_list = [p for p in mask_list if not os.path.basename(p).startswith('._')]
+    mask_list = natsorted(mask_list)
 
-    image_list = glob.glob(tile_path + '*.png')     # Finds all images with .png extension
-    image_list = natsorted(image_list)              # Sorts the images naturally
+    #image_list = glob.glob(tile_path + '*.png')     # Finds all images with .png extension
+    #image_list = natsorted(image_list)              # Sorts the images naturally
     
     imgs_load_list = []
     # Loop through all masks
-    for i in range(len(image_list)):
-        image_fetch = image_list[i]
+    for i in range(len(mask_list)):
+        image_fetch = mask_list[i]
         image = cv2.imread(image_fetch)             # Load the image
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # imgs_load = np.array(image)  
@@ -144,22 +152,23 @@ def read_mask(tile_path: str | Path):
         imgs_binary = imgs_binary[:, :, np.newaxis]  # Apply on each channel
         imgs_load_list.append(imgs_binary)
     mask_load_array = np.array(imgs_load_list)
-    print(f"Loaded array of masks with shape: {imgs_load_array.shape}")
-    
+    print(f"Loaded array of masks with shape: {mask_load_array.shape}")
     return mask_load_array
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
+    #parser.add_argument("--dataset", choose=["pannuke", "conic"], required=True)
+
     parser.add_argument("--model", type=str, default="hovernet")
-    parser.add_argument("--log_name", type=str, default="ensemble_all_fold_0_conic")
+    parser.add_argument("--log_name", type=str, default="ensemble_all_fold_0_pannuke")
     
-    # parser.add_argument('--exp_name0', type=str, default='hover_paper_pannuke_seresnext50')
-    parser.add_argument('--exp_name0', type=str, default='hover_paper_conic_seresnext50_00')
+    parser.add_argument('--exp_name0', type=str, default='hover_paper_pannuke_seresnext50')
+    #parser.add_argument('--exp_name0', type=str, default='hover_paper_conic_seresnext50_00')
     parser.add_argument("--encoder_name0", type=str, default="seresnext50")
     
-    # parser.add_argument('--exp_name1', type=str, default='hover_paper_pannuke_seresnext101')
-    parser.add_argument('--exp_name1', type=str, default='hover_paper_conic_seresnext101_00')
+    parser.add_argument('--exp_name1', type=str, default='hover_paper_pannuke_seresnext101')
+    #parser.add_argument('--exp_name1', type=str, default='hover_paper_conic_seresnext101_00')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
     
     parser.add_argument("--nuclei_marker", choices = ["border", "fill"], default="border", help ="Choose how you want nuclei to be marked in overlay. Choose either 'border' or 'fill' (default: %(default)s)" )
@@ -176,6 +185,10 @@ if __name__ == "__main__":
     # output_dir_dataframe_p = Path("/.../Output/patches/HE_xxx/count_pixels/")
     parser.add_argument("--output_dir", type=str, required=True, help = "Output directory for overlay images")  
     # output_dir = "/.../Output/patches/HE_xxx/overlay/"
+
+    # parser argument for path til checkpoint fil
+    parser.add_argument("--checkpoint0", type=str, required=True, help="Path til checkpoint fil for model 0")
+    parser.add_argument("--checkpoint1", type=str, required=True, help="Path til checkpoint fil for model 1")
     
     args = parser.parse_args()
     
@@ -190,7 +203,7 @@ if __name__ == "__main__":
         print(f"Dataset used: {dataset}")
 
     # Choose epoch you want to retrieve weights from
-    epoch_idx = 49
+    epoch_idx = 79
     
     tile_path = args.tile_path
     # Extract array of images and image names
@@ -218,6 +231,7 @@ if __name__ == "__main__":
     eval_models(imgs_load_array, image_names, num_types, \
                 args.exp_name0, args.encoder_name0, \
                 args.exp_name1, args.encoder_name1, \
+                checkpoint0=args.checkpoint0, checkpoint1=args.checkpoint1, \
                 epoch_idx=epoch_idx, dataset=dataset, output_dir=args.output_dir, output_dir_dataframe=output_dir_dataframe, output_dir_dataframe_p = output_dir_dataframe_p, nuclei_marker=args.nuclei_marker, patch_mask_binary = patch_mask_binary)
     
     
