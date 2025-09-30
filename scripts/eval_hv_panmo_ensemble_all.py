@@ -1,7 +1,6 @@
 import os
 import sys
 sys.path.append('./')
-#os.environ['TORCH_HOME'] = '/media/jenny/PRIVATE_USB/AugHoverData/cache'
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 import numpy as np
 import pandas as pd
@@ -206,7 +205,7 @@ if __name__ == "__main__":
     parser.add_argument('--exp_name1', type=str, default='hover_paper_pannuke_seresnext101')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
 
-     # parser argument for setting epoch
+    # parser argument for setting epoch
     parser.add_argument("--set_epoch", type=int, default = 79, help = "setting epoch")
     # parser argument for out dir path
     parser.add_argument("--output_directory", type=str, required=True, help="output directory")
@@ -240,8 +239,4 @@ if __name__ == "__main__":
     epoch_idx=args.set_epoch
     eval_models(args.split, imgs_load, labels, tp_num, args.exp_name0, args.encoder_name0, \
                     args.exp_name1, args.encoder_name1, out_dir=args.output_directory, nuclei_marker=args.nuclei_marker, epoch_idx=epoch_idx)
-
-    # for epoch_idx in range(40, 50):
-    #     eval_models(args.split, imgs_load, labels, tp_num, args.exp_name0, args.encoder_name0, \
-    #                     args.exp_name1, args.encoder_name1, epoch_idx=epoch_idx)
 
