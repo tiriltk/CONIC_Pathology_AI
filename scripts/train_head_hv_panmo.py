@@ -182,7 +182,7 @@ def demo_basic(rank, world_size):
 
             ckpt_dir = f"/cluster/projects/nn12036k/tirilktr/pannuke_output/checkpoints/{args.encoder_name}/split_{args.split}/bs{args.batch_size}_epochs{args.max_epoch}_lr{args.lr}/run_{args.run}"
             os.makedirs(ckpt_dir, exist_ok=True)
-            if epoch_idx > 30:
+            if epoch_idx > 50:
                 torch.save(ddp_model.module.state_dict(), f"{ckpt_dir}/improved-net_{epoch_idx}.pt")
             torch.save(ddp_model.module.state_dict(), f"{ckpt_dir}/improved-net_latest.pt")
 
