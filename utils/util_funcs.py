@@ -20,7 +20,7 @@ def rm_n_mkdir(dir_path):
     os.makedirs(dir_path)
 
 
-def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker):
+def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker, dataset):
     # Change type of image if necessarily
     if img.dtype == np.float64:
         img = img.astype(np.uint8)             # convert image to uint8
@@ -45,13 +45,18 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
     #     else:
     #         img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]-1)] # (instance_tp[0]-1) corrects for no label nuclei being removed from overlay
     #         img_overlay[indexes] = img[indexes]
-    
-    pixel_per_type = {"1": 0,
-            "2": 0,
-            "3": 0,
-            "4": 0,
-            "5": 0,
-            "6": 0}
+
+
+    n_classes = 5 if dataset == "pannuke" else 6
+    pixel_per_type = {str(i): 0 for i in range(1, n_classes + 1)}
+
+    #conic
+    #pixel_per_type = {"1": 0,
+            #"2": 0,
+            #"3": 0,
+            #"4": 0,
+            #"5": 0,
+            #"6": 0}
     
     if nuclei_marker == "fill":
         instance_list = np.unique(instance_mask)[1:] # drop background, but find all other instances including nuclei with no label
@@ -85,6 +90,9 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
             indexes = np.where(instance_mask == instance)
 
             binary_map[indexes] = 255
+             # Count the number of pixels that are 255
+            count_255_pixels = np.sum(binary_map == 255)
+
             kernal = np.ones((5, 5), np.uint8)
             dilation = cv2.dilate(binary_map, kernal, iterations=1)
             inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
@@ -93,17 +101,31 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
             if instance_tp[0] == 0: # If instance has no type label, exclude it from overlay
                 continue
             else:
+                pixel_per_type[str(instance_tp[0])] += count_255_pixels
                 img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]-1)] # (instance_tp[0]-1) corrects for no label nuclei being removed from overlay
                 img_overlay[indexes] = img[indexes]
-    # New keys
-    key_mapping = {"1" : "neutrophil",
-            "2" : "epithelial",
-            "3" : "lymphocyte",
-            "4" : "plasma",
-            "5" : "eosinophil",
-            "6" : "connective"}
+
+    #for chosen dataset
+    if dataset == "pannuke":
+        key_mapping = {
+            "1": "neoplastic",
+            "2": "inflammatory",
+            "3": "connective",
+            "4": "dead",
+            "5": "epithelial",
+        }
+
+    elif dataset == "conic":
+        key_mapping = {"1" : "neutrophil",
+                "2" : "epithelial",
+                "3" : "lymphocyte",
+                "4" : "plasma",
+                "5" : "eosinophil",
+                "6" : "connective"}
+
     # Create a new dictionary with the new keys
     new_dict = {key_mapping.get(k, k): v for k, v in pixel_per_type.items()}
+
     # pixel_count_df = pd.DataFrame(new_dict, index = ["pixels"])
     return img_overlay, new_dict
 
@@ -141,15 +163,19 @@ def visualize(imgs, ann, pred, output_dir, dataset, nuclei_marker):
     elif dataset=="pannuke":
         print(f"Dataset in visualize: {dataset}")
         # BGR values used in color
-        colors = [[0  ,   0,   255], [255  ,   200, 0], [0, 255,   0], 
-                [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
+        #colors = [[0  ,   0,   255], [255  ,   200, 0], [0, 255,   0], 
+                #[0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
         # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
     
+        colors = [[0  ,   0,   255], [255  ,   200, 0], [0, 255,   0], 
+                [0, 255, 255], [127, 127,   127], [255, 0,   255]]
+         # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (pink)
+
     os.makedirs(f"{output_dir}/images/", exist_ok=True)
     
     for img_idx, (img, mask_gt, mask_pred) in enumerate(zip(imgs, ann, pred)):
-        overlay_gt, pixel_count = draw_dilation(img, mask_gt[:, :, 0], mask_gt[:, :, 1], colors, nuclei_marker)
-        overlay_pred, pixel_count = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors, nuclei_marker)
+        overlay_gt, pixel_count = draw_dilation(img, mask_gt[:, :, 0], mask_gt[:, :, 1], colors, nuclei_marker, dataset)
+        overlay_pred, pixel_count = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors, nuclei_marker, dataset)
         img_to_write = np.zeros((mask_gt.shape[0], 2*mask_gt.shape[1]+5, 3))
         img_to_write[:, :mask_gt.shape[1], :] = overlay_gt
         img_to_write[:, -mask_gt.shape[1]:, :] = overlay_pred
@@ -186,13 +212,13 @@ def visualize_no_gt(imgs, imgs_names, pred, output_dir, dataset, nuclei_marker):
         #         [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
         # # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
         colors = [[255  ,   200, 0], [0, 255,   0], 
-                [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
-        # color order nuclei: neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
+                [0, 255, 255], [127, 127,   127], [255, 0,   255]]
+        # color order nuclei: neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (pink)
     
     os.makedirs(output_dir, exist_ok=True)
     pixel_count_list = []
     for img_idx, (img, mask_pred) in enumerate(zip(imgs, pred)):
-        overlay_pred, pixel_count = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors, nuclei_marker)
+        overlay_pred, pixel_count = draw_dilation(img, mask_pred[:, :, 0], mask_pred[:, :, 1], colors, nuclei_marker, dataset)
         pixel_count_list.append(pixel_count)
         img_to_write = overlay_pred
         img_to_write[:, -mask_pred.shape[1]:, :] = overlay_pred
