@@ -179,10 +179,23 @@ def process_composition(pred_map, NUM_TYPES=7):
     return type_freqs
 
 
-def get_npy_csv(masks, patch_shape=[256, 256]):
+#added if else statement for different datsets (pannuke and conic)
+def get_npy_csv(masks, tp_num, dataset, patch_shape=(256, 256)):
+    if dataset == 'pannuke':
+        class_names = ["neoplastic", "inflammatory", "connective", "dead", "epithelial"]  # 5 classes
+    
+    elif dataset == 'conic':
+        class_names = ["neutrophil", "epithelial", "lymphocyte", "plasma", "eosinophil", "connective"]  # 6 classes
+
+    else:
+        raise ValueError(f"Unknown dataset: {dataset}")
+
+    n_classes = len(class_names)
+
     inst_map_list = []
     class_map_list = []
     nuclei_counts_list = []
+
     for ann in masks:
         patch_inst = ann[..., 0]  # instance map
         patch_class = ann[..., 1]  # class map
@@ -197,7 +210,7 @@ def get_npy_csv(masks, patch_shape=[256, 256]):
         
         nuclei_counts_perclass = []
         # get the counts per class
-        for nuc_val in range(1, 7):
+        for nuc_val in range(1, n_classes + 1):
             patch_class_crop_tmp = patch_class_crop == nuc_val
             patch_inst_crop_tmp = patch_inst_crop * patch_class_crop_tmp
             nr_nuclei = len(np.unique(patch_inst_crop_tmp).tolist()[1:])
@@ -221,29 +234,11 @@ def get_npy_csv(masks, patch_shape=[256, 256]):
     inst_map_array = np.expand_dims(inst_map_array, -1)
     class_map_array = np.expand_dims(class_map_array, -1)
     labels_array = np.concatenate((inst_map_array, class_map_array), axis=-1)
-    data={
-            "neutrophil": nuclei_counts_array[0, 0],
-            "epithelial": nuclei_counts_array[0, 1],
-            "lymphocyte": nuclei_counts_array[0, 2],
-            "plasma": nuclei_counts_array[0, 3],
-            "eosinophil": nuclei_counts_array[0, 4],
-            "connective": nuclei_counts_array[0, 5],
-        }
-    # # print(f'nuclei_counts_df_connective:{data["connective"]}')
-    
-    # convert to pandas dataframe
-    nuclei_counts_df = pd.DataFrame(
-        data={
-            "neutrophil": nuclei_counts_array[:, 0],
-            "epithelial": nuclei_counts_array[:, 1],
-            "lymphocyte": nuclei_counts_array[:, 2],
-            "plasma": nuclei_counts_array[:, 3],
-            "eosinophil": nuclei_counts_array[:, 4],
-            "connective": nuclei_counts_array[:, 5],
-        },
 
-    )
-    
+    # dataframe with correct column names
+    data = {name: nuclei_counts_array[:,i] for i, name in enumerate(class_names)}
+    nuclei_counts_df = pd.DataFrame(data)
+
     return labels_array, nuclei_counts_df, nuclei_counts_array
 
 
@@ -256,7 +251,7 @@ def prepare_ground_truth(imgs, masks, valid_indexes):
     return imgs_valid, labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt
     
 
-def prepare_results(np_results, hv_results, tp_results, model, patch_shape):
+def prepare_results(np_results, hv_results, tp_results, model, patch_shape, tp_num, dataset):
     semantic_predictions = []
     for (np_map, hv_map, tp_map) in zip(np_results, hv_results, tp_results):
         np_map = np.array(np_map)
@@ -270,7 +265,7 @@ def prepare_results(np_results, hv_results, tp_results, model, patch_shape):
        
     semantic_predictions = np.array(semantic_predictions)
                                                                             
-    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions, patch_shape= patch_shape)
+    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions, tp_num = tp_num, dataset = dataset, patch_shape= patch_shape)
     return labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred
 
 
