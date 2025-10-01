@@ -187,6 +187,9 @@ def get_npy_csv(masks, tp_num, dataset, patch_shape=(256, 256)):
     elif dataset == 'conic':
         class_names = ["neutrophil", "epithelial", "lymphocyte", "plasma", "eosinophil", "connective"]  # 6 classes
 
+    #elif dataset == 'monusac'
+        #class_names == ["Epithelial", "Lymphocyte", "Neutrophil", "Macrophage"]
+        
     else:
         raise ValueError(f"Unknown dataset: {dataset}")
 

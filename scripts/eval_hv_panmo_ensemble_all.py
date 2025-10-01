@@ -22,7 +22,7 @@ from utils.eval_utils import prepare_ground_truth, prepare_results, convert_pyto
 from torchmetrics.segmentation import DiceScore    
 
 
-def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, num_types=0):
+def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, num_types):
 
     all_metrics = {}
 
@@ -124,7 +124,7 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
     df = df.to_csv(f"{out_dir}/{epoch_idx}.csv", index=False)
 
 
-def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, out_dir, nuclei_marker, epoch_idx=79):
+def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, out_dir, nuclei_marker, dataset, epoch_idx=79):
     valid_indices = range(len(imgs_load))
 
     checkpoint_path0 = f"{args.checkpoint0}/improved-net_{epoch_idx}.pt"
@@ -169,15 +169,16 @@ def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, e
         hv_results.append(hv_map)
         tp_results.append(tp_map)
 
-    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = prepare_results(np_results, hv_results, tp_results, segmentation_model1, patch_shape=[256,256])
+    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = prepare_results(np_results, hv_results, tp_results, segmentation_model1, patch_shape=[256,256], tp_num = tp_num, dataset = dataset)
 
     imgs_array_gt, labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = prepare_ground_truth(imgs_load, labels, valid_indices)  
 
+    dataset_name = dataset
     # visualize(imgs_array_gt, labels_array_gt, labels_array_pred,f"visualize/overlay")
-    if tp_num == 5:
-        dataset_name = "monusac"
-    elif tp_num == 6:
-        dataset_name = "pannuke"
+    #if tp_num == 5:
+        #dataset_name = "monusac"
+   #elif tp_num == 6:
+        #dataset_name = "pannuke"
     
     # visualize(imgs_array_gt, labels_array_gt, labels_array_pred,f"visualize/overlay_{dataset_name}")
     eval_func(labels_array_gt, labels_array_pred, \
@@ -218,15 +219,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     tp_num = 7
-    # hover_head_dropout_aug_glas
+    dataset = "conic"
     if "monusac" in args.exp_name0:
         img_path = "data_monusac/images_test.npy"
         ann_path = "data_monusac/labels_test.npy"
         tp_num = 5
+        dataset = "monusac"
     elif "pannuke" in args.exp_name0:
         img_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/images_test.npy"
         ann_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/labels_test.npy"
         tp_num = 6
+        dataset = "pannuke"
+    # else remains tp_num=7, dataset="conic"
     
     # used mmap to decrease memory demand
     labels = np.load(ann_path, mmap_mode='r')
@@ -238,5 +242,5 @@ if __name__ == "__main__":
 
     epoch_idx=args.set_epoch
     eval_models(args.split, imgs_load, labels, tp_num, args.exp_name0, args.encoder_name0, \
-                    args.exp_name1, args.encoder_name1, out_dir=args.output_directory, nuclei_marker=args.nuclei_marker, epoch_idx=epoch_idx)
+                    args.exp_name1, args.encoder_name1, out_dir=args.output_directory, nuclei_marker=args.nuclei_marker, dataset = dataset, epoch_idx=epoch_idx)
 
