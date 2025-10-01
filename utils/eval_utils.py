@@ -245,11 +245,12 @@ def get_npy_csv(masks, tp_num, dataset, patch_shape=(256, 256)):
     return labels_array, nuclei_counts_df, nuclei_counts_array
 
 
-def prepare_ground_truth(imgs, masks, valid_indexes):
+
+def prepare_ground_truth(imgs, masks, valid_indexes, tp_num, dataset):
     masks_valid = masks[valid_indexes]
     imgs_valid = imgs[valid_indexes]
     # labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = get_npy_csv(masks_valid, patch_shape=[224, 224])
-    labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = get_npy_csv(masks_valid, patch_shape=[256, 256])
+    labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = get_npy_csv(masks_valid, tp_num = tp_num, dataset = dataset, patch_shape=[256, 256])
 
     return imgs_valid, labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt
     
@@ -268,7 +269,7 @@ def prepare_results(np_results, hv_results, tp_results, model, patch_shape, tp_n
        
     semantic_predictions = np.array(semantic_predictions)
                                                                             
-    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions, tp_num = tp_num, dataset = dataset, patch_shape= patch_shape)
+    labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = get_npy_csv(masks=semantic_predictions, tp_num = tp_num, dataset = dataset, patch_shape = patch_shape)
     return labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred
 
 

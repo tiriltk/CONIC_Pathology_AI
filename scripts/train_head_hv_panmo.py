@@ -29,14 +29,14 @@ from models.model_head_aug import HoVerNetHeadExt
 from backbones.losses import SoftBCEWithLogitsLoss, MSGELoss, DiceLoss, FocalLoss, MSELoss, SoftCrossEntropyLoss
 
 parser = ArgumentParser()
-parser.add_argument("--lr", type=float, default=0.0003, help="learning rate")
-parser.add_argument("--batch_size", type=int, default=4, help="batch size")
+parser.add_argument("--lr", type=float, default=0.0001, help="learning rate")
+parser.add_argument("--batch_size", type=int, default=8, help="batch size")
 parser.add_argument('--focal_loss', default=False, action='store_true')
 parser.add_argument('--scheduler', default=True, action='store_true')
 parser.add_argument('--split', type=int, default=0)
 parser.add_argument("--name", type=str, default="hover_paper_pannuke_seresnext50", help="name of experiment")
 parser.add_argument("--encoder_name", type=str, default="seresnext50", help="name of the encoder")
-parser.add_argument("--max_epoch", type=int, default=50, help="max epoch number")
+parser.add_argument("--max_epoch", type=int, default=80, help="max epoch number")
 parser.add_argument('--port', type=str, default="49152", help="port of the distributed training")
 parser.add_argument("--augments", type=str, default="aug/aug_0.txt", help="augment file name")
 parser.add_argument("--run", type = int, default = 0, help ="run number")

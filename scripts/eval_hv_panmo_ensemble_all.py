@@ -22,7 +22,7 @@ from utils.eval_utils import prepare_ground_truth, prepare_results, convert_pyto
 from torchmetrics.segmentation import DiceScore    
 
 
-def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, num_types):
+def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, num_types, dataset):
 
     all_metrics = {}
 
@@ -87,7 +87,7 @@ def eval_func(true_array, pred_array, true_csv, pred_csv, out_dir, epoch_idx, nu
     all_metrics["multi_pq+"] = [np.mean(mpq_metrics)]
 
     # first check to make sure ground truth and prediction is in csv format
-    r2, r2_array = get_multi_r2(true_csv, pred_csv, return_array=True)
+    r2, r2_array = get_multi_r2(true_csv, pred_csv, dataset, return_array=True)
     all_metrics["multi_r2"] = [r2]
 
     cell_dice_list = []
@@ -171,7 +171,7 @@ def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, e
 
     labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = prepare_results(np_results, hv_results, tp_results, segmentation_model1, patch_shape=[256,256], tp_num = tp_num, dataset = dataset)
 
-    imgs_array_gt, labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = prepare_ground_truth(imgs_load, labels, valid_indices)  
+    imgs_array_gt, labels_array_gt, nuclei_counts_df_gt, nuclei_counts_array_gt = prepare_ground_truth(imgs_load, labels, valid_indices, tp_num = tp_num, dataset = dataset)  
 
     dataset_name = dataset
     # visualize(imgs_array_gt, labels_array_gt, labels_array_pred,f"visualize/overlay")
@@ -182,7 +182,7 @@ def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, e
     
     # visualize(imgs_array_gt, labels_array_gt, labels_array_pred,f"visualize/overlay_{dataset_name}")
     eval_func(labels_array_gt, labels_array_pred, \
-            nuclei_counts_df_gt, nuclei_counts_df_pred, out_dir, epoch_idx, num_types=tp_num)
+            nuclei_counts_df_gt, nuclei_counts_df_pred, out_dir, epoch_idx, num_types=tp_num, dataset = dataset)
     
     # if epoch_idx==49:
     #     output_dir = "/media/jenny/PRIVATE_USB/AugHoverData/all_pannuke_output/output_dir/batch_size_8_part3/"

@@ -649,7 +649,7 @@ def get_pq(true, pred, match_iou=0.5, remap=True):
     )
 
 
-def get_multi_r2(true, pred, return_array=False):
+def get_multi_r2(true, pred, dataset, return_array=False):
     """Get the correlation of determination for each class and then 
     average the results.
     
@@ -661,15 +661,28 @@ def get_multi_r2(true, pred, return_array=False):
         multi class coefficient of determination
         
     """
+
+    if dataset == 'pannuke':
+        class_names = ["neoplastic", "inflammatory", "connective", "dead", "epithelial"]  # 5 classes
+    
+    elif dataset == 'conic':
+        class_names = ["neutrophil", "epithelial", "lymphocyte", "plasma", "eosinophil", "connective"]  # 6 classes
+
+    #elif dataset == 'monusac'
+        #class_names == ["Epithelial", "Lymphocyte", "Neutrophil", "Macrophage"]
+        
+    else:
+        raise ValueError(f"Unknown dataset: {dataset}")
+
     # first check to make sure that the appropriate column headers are there
-    class_names = [
-        "epithelial",
-        "lymphocyte",
-        "plasma",
-        "neutrophil",
-        "eosinophil",
-        "connective",
-    ]
+    #class_names = [
+        #"epithelial",
+        #"lymphocyte",
+        #"plasma",
+        #"neutrophil",
+        #"eosinophil",
+        #"connective",
+    #]
     
     for col in true.columns:
         if col not in class_names:
