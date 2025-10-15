@@ -184,8 +184,7 @@ def eval_models(FOLD_IDX, imgs_load, labels, tp_num, exp_name0, encoder_name0, e
     eval_func(labels_array_gt, labels_array_pred, \
             nuclei_counts_df_gt, nuclei_counts_df_pred, out_dir, epoch_idx, num_types=tp_num, dataset = dataset)
     
-    # if epoch_idx==49:
-    #     output_dir = "/media/jenny/PRIVATE_USB/AugHoverData/all_pannuke_output/output_dir/batch_size_8_part3/"
+  
     visualize(imgs_array_gt, labels_array_gt , labels_array_pred , out_dir, dataset_name, nuclei_marker)
 
 if __name__ == "__main__":
@@ -226,8 +225,8 @@ if __name__ == "__main__":
         tp_num = 5
         dataset = "monusac"
     elif "pannuke" in args.exp_name0:
-        img_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/images_test.npy"
-        ann_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/labels_test.npy"
+        img_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_combined/split_{args.split}/images_test.npy"
+        ann_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_combined/split_{args.split}/labels_test.npy"
         tp_num = 6
         dataset = "pannuke"
     # else remains tp_num=7, dataset="conic"

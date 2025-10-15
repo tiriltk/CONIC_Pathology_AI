@@ -233,5 +233,5 @@ if __name__ == "__main__":
                 args.exp_name1, args.encoder_name1, \
                 checkpoint0=args.checkpoint0, checkpoint1=args.checkpoint1, \
                 epoch_idx=epoch_idx, dataset=dataset, output_dir=args.output_dir, output_dir_dataframe=output_dir_dataframe, output_dir_dataframe_p = output_dir_dataframe_p, nuclei_marker=args.nuclei_marker, patch_mask_binary = patch_mask_binary)
-    
-    
+
+        

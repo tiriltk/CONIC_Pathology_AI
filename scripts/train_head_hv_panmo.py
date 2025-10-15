@@ -29,8 +29,8 @@ from models.model_head_aug import HoVerNetHeadExt
 from backbones.losses import SoftBCEWithLogitsLoss, MSGELoss, DiceLoss, FocalLoss, MSELoss, SoftCrossEntropyLoss
 
 parser = ArgumentParser()
-parser.add_argument("--lr", type=float, default=0.0001, help="learning rate")
-parser.add_argument("--batch_size", type=int, default=8, help="batch size")
+parser.add_argument("--lr", type=float, default=0.0003, help="learning rate")
+parser.add_argument("--batch_size", type=int, default=16, help="batch size")
 parser.add_argument('--focal_loss', default=False, action='store_true')
 parser.add_argument('--scheduler', default=True, action='store_true')
 parser.add_argument('--split', type=int, default=0)
@@ -58,8 +58,8 @@ def demo_basic(rank, world_size):
     if "pannuke" in args.name:
         print("Pannuke detected")
         # Load images, perform augmentation, generate horizontal and vertical maps
-        imagenet = CoNICDatasetPanMon(img_path=f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/images_train.npy", 
-                                                ann_path=f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/labels_train.npy",
+        imagenet = CoNICDatasetPanMon(img_path=f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_combined/split_{args.split}/images_train.npy", 
+                                                ann_path=f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_combined/split_{args.split}/labels_train.npy",
                                       input_shape=(256, 256), mask_shape=(256, 256))
         num_types = 6
     elif "monusac" in args.name:
@@ -90,9 +90,15 @@ def demo_basic(rank, world_size):
     ddp_model = DDP(ddp_model, device_ids=[rank], find_unused_parameters=True)
 
     optimizer = torch.optim.Adam(ddp_model.module.parameters(), lr=args.lr)
-    milestones = list(range(40, args.max_epoch, 10)) 
+
+    #for smaller dataset
+    #milestones = list(range(40, args.max_epoch, 10)) 
+
+    #for larger datasets combined folds dataset
+    #milestones = list(range(60, args.max_epoch, 10))
+    milestones = [30, 60]
+
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
-    #scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30, 40], gamma=0.1)
 
     soft_bce_loss = SoftBCEWithLogitsLoss()
 
@@ -180,9 +186,9 @@ def demo_basic(rank, world_size):
             # checkpoint_path = "/cluster/projects/nn12036k/tirilktr/pannuke_output/checkpoints/seresnext50/bs{}_epochs{}_lr{}/run_{}/improved-net_latest.pt".format(args.run, args.batch_size, args.max_epoch, args.lr)
             # torch.save(ddp_model.module.state_dict(), checkpoint_path)
 
-            ckpt_dir = f"/cluster/projects/nn12036k/tirilktr/pannuke_output/checkpoints/{args.encoder_name}/split_{args.split}/bs{args.batch_size}_epochs{args.max_epoch}_lr{args.lr}/run_{args.run}"
+            ckpt_dir = f"/cluster/projects/nn12036k/tirilktr/pannuke_combined_output/checkpoints/{args.encoder_name}/split_{args.split}/bs{args.batch_size}_epochs{args.max_epoch}_lr{args.lr}/run_{args.run}"
             os.makedirs(ckpt_dir, exist_ok=True)
-            if epoch_idx > 50:
+            if epoch_idx > 20:
                 torch.save(ddp_model.module.state_dict(), f"{ckpt_dir}/improved-net_{epoch_idx}.pt")
             torch.save(ddp_model.module.state_dict(), f"{ckpt_dir}/improved-net_latest.pt")
 
