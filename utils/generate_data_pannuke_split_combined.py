@@ -5,6 +5,9 @@ import cv2
 
 import numpy as np
 
+#This script needs further development, as data folds cannot be combined without additional conversions
+#To combine two folds, more preprocessing is required to make them compatible with the training pipeline
+
 def remap_label(pred, by_size=False):
     """
     Rename all instance id so that the id is contiguous i.e [0, 1, 2, 3]
