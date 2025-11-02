@@ -122,6 +122,6 @@ def pannuke_combined(test_fold=0):
     print(f"Saved combined data to {out_dir}") #print
 
 if __name__ == "__main__":
-    pannuke_combined(test_fold=0)   #Train: Fold 2 + 3, Test: Fold 1
-    # pannuke_combined(test_fold=1) #Train: Fold 1 + 3 Test: Fold 2
+    # pannuke_combined(test_fold=0)   #Train: Fold 2 + 3, Test: Fold 1
+    pannuke_combined(test_fold=1) #Train: Fold 1 + 3 Test: Fold 2
     # pannuke_combined(test_fold=2) #Train: Fold 1 + 2, Test: Fold 3

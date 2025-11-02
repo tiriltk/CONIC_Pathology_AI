@@ -108,17 +108,29 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     # Print and save the dataframe
     print(pixel_count_df)
     pixel_count_df.to_csv(output_dir_dataframe_p, index=False)
+
     
-def read_images(tile_path: str):
+def read_images(tile_path: str, start:int, end:int):
     """
     Load all images and output them as a sorted array.
     """
     image_list = glob.glob(tile_path + '*.png')     # Finds all images with .png extension
     image_list = [p for p in image_list if not os.path.basename(p).startswith('._')] 
     image_list = natsorted(image_list)              # Sorts the images naturally
+
+    #Take a section of the patches
+    original_len = len(image_list)
+
+    if end == -1 or end > len(image_list):
+        end = len(image_list)
+    image_list = image_list[start:end]
+
+    print(f"Total patches: {original_len}. Loading {start}:{end} and {len(image_list)} patches")
+
     # Extract only the image names from the paths
     image_names = [os.path.basename(image) for image in image_list]
     imgs_load_list = []
+
     # Loop through all images
     for i in range(len(image_list)):
         image_fetch = image_list[i]
@@ -126,11 +138,12 @@ def read_images(tile_path: str):
         imgs_load = np.array(image)                 # Convert the image to a NumPy array
         imgs_load = np.array(image.convert("RGB"))  # If image is RGBA or other formats, convert it to RGB
         imgs_load_list.append(imgs_load)
+        
     imgs_load_array = np.array(imgs_load_list)
     print(f"Loaded array of images with shape: {imgs_load_array.shape}")
     return imgs_load_array, image_names
 
-def read_mask(tile_path: str):
+def read_mask(tile_path: str, start:int, end:int):
     """
     Load all masks and output them as a sorted array.
     """
@@ -140,6 +153,11 @@ def read_mask(tile_path: str):
 
     #image_list = glob.glob(tile_path + '*.png')     # Finds all images with .png extension
     #image_list = natsorted(image_list)              # Sorts the images naturally
+
+    #Take a section of the mask
+    if end == -1 or end > len(mask_list):
+        end = len(mask_list)
+    mask_list = mask_list[start:end]
     
     imgs_load_list = []
     # Loop through all masks
@@ -189,6 +207,10 @@ if __name__ == "__main__":
     # parser argument for path til checkpoint fil
     parser.add_argument("--checkpoint0", type=str, required=True, help="Path til checkpoint fil for model 0")
     parser.add_argument("--checkpoint1", type=str, required=True, help="Path til checkpoint fil for model 1")
+
+    #Take out a section of the patches from start to end (to reduce memory)
+    parser.add_argument("--start", type=int, default=0)
+    parser.add_argument("--end", type=int, default=-1) #-1 means the last element, so to the end
     
     args = parser.parse_args()
     
@@ -207,10 +229,10 @@ if __name__ == "__main__":
     
     tile_path = args.tile_path
     # Extract array of images and image names
-    imgs_load_array, image_names = read_images(tile_path)
+    imgs_load_array, image_names = read_images(tile_path, args.start, args.end)
     
     # Extract array of masks
-    patch_mask_binary = read_mask(args.mask_path)
+    patch_mask_binary = read_mask(args.mask_path, args.start, args.end)
 
     # Extracting numbers using string manipulation
     numbers = [int(name.split('_')[1].split('.')[0]) for name in image_names]

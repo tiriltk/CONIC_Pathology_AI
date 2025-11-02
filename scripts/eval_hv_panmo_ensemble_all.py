@@ -225,8 +225,8 @@ if __name__ == "__main__":
         tp_num = 5
         dataset = "monusac"
     elif "pannuke" in args.exp_name0:
-        img_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_combined/split_{args.split}/images_test.npy"
-        ann_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_combined/split_{args.split}/labels_test.npy"
+        img_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/images_test.npy"
+        ann_path = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke/split_{args.split}/labels_test.npy"
         tp_num = 6
         dataset = "pannuke"
     # else remains tp_num=7, dataset="conic"
