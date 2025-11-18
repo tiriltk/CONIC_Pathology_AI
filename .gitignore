@@ -1,1 +1,5 @@
+
 *.out
+.DS_Store
+__pycache__/
+scripts/run_scripts_jobs.sh
