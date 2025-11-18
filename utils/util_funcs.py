@@ -212,8 +212,8 @@ def visualize_no_gt(imgs, imgs_names, pred, output_dir, dataset, nuclei_marker):
         #         [0, 255, 255], [255, 0,   255], [127, 127,   127], [255  ,   255, 0]]
         # # color order nuclei: nolable (red), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (cyan)
         colors = [[255  ,   200, 0], [0, 255,   0], 
-                [0, 255, 255], [127, 127,   127], [255, 0,   255]]
-        # color order nuclei: neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (pink)
+                [0, 255, 255], [127, 127,   127], [0, 0,   255]]
+        # color order nuclei: neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (red)
     
     os.makedirs(output_dir, exist_ok=True)
     pixel_count_list = []

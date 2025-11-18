@@ -24,7 +24,7 @@ from PIL import Image
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, output_dir, output_dir_dataframe, output_dir_dataframe_p, patch_mask_binary, checkpoint0, checkpoint1, epoch_idx=79, dataset="pannuke", nuclei_marker="fill"):
+def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, output_dir, output_dir_dataframe, output_dir_dataframe_p, output_dir_tp, patch_mask_binary, checkpoint0, checkpoint1, epoch_idx=79, dataset="pannuke", nuclei_marker="fill"):
     valid_indices = range(len(imgs_load_array))
     #valid_indices = range(len(imgs_load_array-1 ))
     
@@ -90,7 +90,7 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     print(f"img_tensor.shape[1]: {img_tensor.shape[1]}")
     print(f"img_tensor.shape[2]: {img_tensor.shape[2]}")
     print(f"img_tensor.shape[3]: {img_tensor.shape[3]}")
-    
+
     # Extract results
     labels_array_pred, nuclei_counts_df_pred, nuclei_counts_array_pred = prepare_results(np_results, hv_results, tp_results, segmentation_model0, patch_shape=[img_tensor.shape[1],img_tensor.shape[2]], tp_num = tp_num, dataset = dataset)
     
@@ -108,6 +108,14 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     # Print and save the dataframe
     print(pixel_count_df)
     pixel_count_df.to_csv(output_dir_dataframe_p, index=False)
+
+    numbers = [int(name.split('_')[1].split('.')[0]) for name in image_names]
+
+    #Save tp results 
+    os.makedirs(output_dir_tp, exist_ok=True)
+    output_path = os.path.join(output_dir_tp, f"tp_results_from_{numbers[0]}_to_{numbers[-1]}.npy")
+    np.save(output_path, np.array(tp_results, dtype=np.float32))
+    print(f"TP-results saved to: {output_path}")
 
     
 def read_images(tile_path: str, start:int, end:int):
@@ -189,7 +197,7 @@ if __name__ == "__main__":
     #parser.add_argument('--exp_name1', type=str, default='hover_paper_conic_seresnext101_00')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
     
-    parser.add_argument("--nuclei_marker", choices = ["border", "fill"], default="border", help ="Choose how you want nuclei to be marked in overlay. Choose either 'border' or 'fill' (default: %(default)s)" )
+    parser.add_argument("--nuclei_marker", choices = ["border", "fill"], default="fill", help ="Choose how you want nuclei to be marked in overlay. Choose either 'border' or 'fill' (default: %(default)s)" )
     # nuclei_marker = "fill"    # If you want the whole nuclei colored
     # nuclei_marker = "border"  # If you only want the nuclei border/outline marked
     
@@ -203,6 +211,8 @@ if __name__ == "__main__":
     # output_dir_dataframe_p = Path("/.../Output/patches/HE_xxx/count_pixels/")
     parser.add_argument("--output_dir", type=str, required=True, help = "Output directory for overlay images")  
     # output_dir = "/.../Output/patches/HE_xxx/overlay/"
+
+    parser.add_argument("--output_dir_tp", type = str, required=True, help="Output directory for tp results")
 
     # parser argument for path til checkpoint fil
     parser.add_argument("--checkpoint0", type=str, required=True, help="Path til checkpoint fil for model 0")
@@ -254,6 +264,6 @@ if __name__ == "__main__":
                 args.exp_name0, args.encoder_name0, \
                 args.exp_name1, args.encoder_name1, \
                 checkpoint0=args.checkpoint0, checkpoint1=args.checkpoint1, \
-                epoch_idx=epoch_idx, dataset=dataset, output_dir=args.output_dir, output_dir_dataframe=output_dir_dataframe, output_dir_dataframe_p = output_dir_dataframe_p, nuclei_marker=args.nuclei_marker, patch_mask_binary = patch_mask_binary)
+                epoch_idx=epoch_idx, dataset=dataset, output_dir=args.output_dir, output_dir_dataframe=output_dir_dataframe, output_dir_dataframe_p = output_dir_dataframe_p, output_dir_tp=args.output_dir_tp, nuclei_marker=args.nuclei_marker, patch_mask_binary = patch_mask_binary)
 
         
