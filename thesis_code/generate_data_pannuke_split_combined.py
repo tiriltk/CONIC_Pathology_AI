@@ -4,7 +4,9 @@ sys.path.append("./")
 import cv2
 
 import numpy as np
-# from utils.visualize_gt import draw_dilation_seg
+
+#This script needs further development, as data folds cannot be combined without additional conversions
+#To combine two folds, more preprocessing is required to make them compatible with the training pipeline
 
 def remap_label(pred, by_size=False):
     """
@@ -48,10 +50,13 @@ def pannuke(split):
 
     print("Loading data")
 
-    images_this = np.load(f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/Fold_{split+1}/images/images.npy", mmap_mode='r')
-    masks_this  = np.load(f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/Fold_{split+1}/masks/masks.npy",  mmap_mode='r')
+    #/cluster/projects/nn12036k/tirilktr/datasets/pannuke_raw
 
-    print("Loaded data, starting iteration")
+    images_this = np.load(f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_raw/Fold_{split+1}/images/images.npy", mmap_mode='r')
+    masks_this  = np.load(f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_raw/Fold_{split+1}/masks/masks.npy",  mmap_mode='r')
+
+    #print("Loaded data, starting iteration")
+    print(f"Loaded Fold_{split+1}: images={images_this.shape}, masks={masks_this.shape}")
 
     for img_single, mask_single in zip(images_this, masks_this):
         images_train.append(img_single)
@@ -93,12 +98,12 @@ def select_folds(test_fold: int):
             train_folds.append(fold)
     return train_folds, test_fold
 
-#builds the combined dataset, with two folds for training and one for test
+#make the combined dataset with two folds for training and one for test
 def pannuke_combined(test_fold=0):
     train_folds, test_fold = select_folds(test_fold)
     print(f"Train folds: {train_folds} Test fold: {test_fold}")
 
-    #training, two folders
+    #training data two folders
     train_images_list, train_labels_list = [], []
     for f in train_folds:
         images, labels = pannuke(f)
@@ -107,67 +112,19 @@ def pannuke_combined(test_fold=0):
     train_images = np.concatenate(train_images_list, axis=0)
     train_labels = np.concatenate(train_labels_list, axis=0)
 
-    #test, one fold
+    #test data one fold
     test_images, test_labels = pannuke(test_fold)
 
     #saving
-    out_dir = f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/pannuke_datasets_combined/split_{test_fold}/"
+    out_dir = f"/cluster/projects/nn12036k/tirilktr/datasets/pannuke_combined/split_{test_fold}/"
     os.makedirs(out_dir, exist_ok=True)
     np.save(os.path.join(out_dir, "images_train.npy"), train_images)
     np.save(os.path.join(out_dir, "labels_train.npy"), train_labels)
     np.save(os.path.join(out_dir, "images_test.npy"),  test_images)
     np.save(os.path.join(out_dir, "labels_test.npy"),  test_labels)
-    print(f"Saved combined data to {out_dir}")
+    print(f"Saved combined data to {out_dir}") #print
 
 if __name__ == "__main__":
-    pannuke_combined(test_fold=0)   #Train: Fold 1 + 2, Test: Fold 0
-    # pannuke_combined(test_fold=1) #Train: Fold 0 + 2 Test: Fold 1
-    # pannuke_combined(test_fold=2) #Train: Fold 0 + 1, Test: Fold 2
-
-
-"""
-
-def save_train(train_folds, out_dir):
-    os.makedirs(out_dir, exist_ok=True)
-    train_images_list, train_labels_list = [], []
-
-    for f in train_folds:
-        imgs, lbls = pannuke(f)
-        train_images_list.append(imgs)
-        train_labels_list.append(lbls)
-       
-    train_images = np.concatenate(train_images_list, axis=0)
-    train_labels = np.concatenate(train_labels_list, axis=0)
-
-    np.save(os.path.join(out_dir, "images_train.npy"), train_images)
-    np.save(os.path.join(out_dir, "labels_train.npy"), train_labels)
-
-
-def save_test(test_fold, out_dir):
-    os.makedirs(out_dir, exist_ok=True)
-    test_images, test_labels = pannuke(test_fold)
-
-    np.save(os.path.join(out_dir, "images_test.npy"),  test_images)
-    np.save(os.path.join(out_dir, "labels_test.npy"),  test_labels)
-
-
-def pannuke_combined(test_fold=0):
-    train_folds = [f for f in [0,1,2] if f != test_fold]
-    out_dir = f"/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/pannuke_datasets_combined/split_{test_fold}/"
-    print(f"Train folds: {train_folds}, Test fold: {test_fold}")
-
-    save_train(train_folds, out_dir) 
-    save_test(test_fold, out_dir)   
-
-if __name__ == "__main__":
-    test_fold = 0
-    out_dir = "/Users/tirilkt/Documents/studie/masteroppgave/Datasets/Pannuke/pannuke_datasets_combined/split_0/"
-    train_folds, _ = select_folds(test_fold)
-    save_train(train_folds, out_dir)
-    print("Saving to:", out_dir)
-
-    # pannuke_combined(test_fold=0)   # use 0 as test, then folds 1+2 train
-    # pannuke_combined(test_fold=1)
-    # pannuke_combined(test_fold=2)
-
-"""
+    # pannuke_combined(test_fold=0)   #Train: Fold 2 + 3, Test: Fold 1
+    pannuke_combined(test_fold=1) #Train: Fold 1 + 3 Test: Fold 2
+    # pannuke_combined(test_fold=2) #Train: Fold 1 + 2, Test: Fold 3
