@@ -1,10 +1,6 @@
-#Apply registration
+#Apply Registration for co-registration
 
 """
-The apply_registration script: 
-Takes the affination and wraps the image
-Uses: imwrap, affine2d and projective2d
-Return the transformed moving image
 """
 
 import os

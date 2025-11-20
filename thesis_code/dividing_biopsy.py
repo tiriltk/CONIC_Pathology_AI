@@ -3,24 +3,17 @@ import os
 import sys
 import argparse
 
+"""
+Divides the PNG image into four parts and saves them to open the biopsies
+"""
+
 
 def split_image(image_path, output_dir):
-    """
-    Divides PNG image into four parts and saves them to open the biopsies.
-
-    Args:
-        image_path (str): The path to the input PNG image.
-    """
-
-    try:
-        img = Image.open(image_path)
-    except FileNotFoundError:
-        print(f"Error: Image not found at {image_path}")
-        return
+    img = Image.open(image_path)
 
     width, height = img.size
 
-    #calculate half the width and height
+    #Calculate half the width and height
     half_width = width // 2
     half_height = height // 2
 

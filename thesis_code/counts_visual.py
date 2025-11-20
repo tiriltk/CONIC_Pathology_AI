@@ -33,11 +33,11 @@ csv_05040_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_outp
 csv_11640_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_second/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_combined.csv'
 
 
-# Read the CSV file
+#Read the csv file
 df = pd.read_csv(csv_04440_second)
 df.head()
 
-#sum up counts for each cell type
+#Sum up counts for each cell type
 totals = df[['neoplastic', 'inflammatory', 'connective', 'dead', 'epithelial']].sum()
 print(totals)
 
