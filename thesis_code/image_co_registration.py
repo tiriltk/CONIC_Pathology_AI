@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+
 #import sys 
 #script_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(script_dir)
@@ -15,7 +16,8 @@ Loads fixed and moving image.
 Calculates the scaling factor.
 Scales the moving image to the size as fixed.
 Manual rotation and translation.
-Plots the results.
+From func_co_reg fine adjustments and alignments.
+Plots and saves the results.
 """
 
 #Folders
@@ -23,24 +25,43 @@ dir_visium = '/Volumes/Expansion/Co-registration'
 name_list = ['Func116']
 dir_dig_path = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best'
 
-def tissue_bbox(rgb_image, thresh=240):
-    gray = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
-    mask = gray < thresh
+#Find the color of the background pixels to select treshhold value separate the biopsy from the background
+def pixel_color(image_path):
+    img_gray = cv2.imread(image_path, 0) #Image in grayscale
+
+    #coordinates to pick pixel from
+    x = 20
+    y = 20
+    pixel_value = img_gray[y, x]
+
+    print(f"The pixel value: {pixel_value}")
+
+    #The pixel value for fixed: (10x10) = 238, (5x5) = 237, (20x20) = 239
+    #The pixel value for moving: (10x20) = 240,(5x5) = 240, (20x20) = 241
+
+    return pixel_value
+
+
+#Select a tight box around the circular biopsy to scale better as the biopsies have different sizes
+def biopsy_mask(rgb_image, thresh=230):
+    gray_img = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
+    mask = gray_img < thresh
     ys, xs = np.where(mask)
-    y_min, y_max = ys.min(), ys.max()
-    x_min, x_max = xs.min(), xs.max()
+    y_min, y_max = ys.min(), ys.max()  #top and bottom
+    x_min, x_max = xs.min(), xs.max()  #left and right
     return x_min, y_min, x_max, y_max
 
 #Computing scaling factor
 def compute_scaling_factor(fixed_image, moving_image):  # fixed: Visium, moving: HoverNet results
-    height_f, width_f = fixed_image.shape[:2]
-    height_m, width_m = moving_image.shape[:2]
+    height_fixed, width_fixed = fixed_image.shape[:2]
+    height_moving, width_moving = moving_image.shape[:2]
 
-    scaleH = height_f / height_m
-    scaleW = width_f / width_m
+    scaleH = height_fixed / height_moving
+    scaleW = width_fixed / width_moving
 
     #scale_factor = np.mean([scaleH, scaleW])
     #return scale_factor
+
     return scaleW, scaleH
 
 
@@ -123,15 +144,6 @@ def func_co_reg(fixed_rgb, moving_rgb):
     #matrix, mask = cv2.estimateAffine2D(moving_matrix, fixed_matrix, cv2.RANSAC)
     matrix, inliers = cv2.estimateAffinePartial2D(moving_matrix, fixed_matrix, method=cv2.RANSAC)
 
-#     matrix, inliers = cv2.estimateAffinePartial2D(
-#     moving_matrix,
-#     fixed_matrix,
-#     method=cv2.RANSAC,
-#     ransacReprojThreshold=3.0,
-#     maxIters=5000,
-#     confidence=0.99,
-#     refineIters=10,
-# )
 
     matrix_resized = matrix.copy()
     matrix_resized[0, 2] /=file_reduction
@@ -157,6 +169,9 @@ for name in (name_list):
     fixed_image = cv2.imread(str(fixed_path))
     moving_image = cv2.imread(str(moving_path))
 
+    #pixel_color(fixed_path)
+    #pixel_color(moving_path)    
+
     #OpenCV use BGR
     #Need RGB for matplotlib
     fixed_rgb = cv2.cvtColor(fixed_image, cv2.COLOR_BGR2RGB) #Converts BGR to RGB for processing
@@ -171,8 +186,8 @@ for name in (name_list):
     #height_f, width_f = fixed_rgb.shape[:2]
     #moving_resized = cv2.resize(moving_scaled, (width_f, height_f), interpolation=cv2.INTER_CUBIC)
 
-    fx1, fy1, fx2, fy2 = tissue_bbox(fixed_rgb)
-    mx1, my1, mx2, my2 = tissue_bbox(moving_rgb)
+    fx1, fy1, fx2, fy2 = biopsy_mask(fixed_rgb)
+    mx1, my1, mx2, my2 = biopsy_mask(moving_rgb)
 
     fixed_crop  = fixed_rgb[fy1:fy2, fx1:fx2]
     moving_crop = moving_rgb[my1:my2, mx1:mx2]
@@ -227,7 +242,7 @@ for name in (name_list):
 
  
 
-    save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_opencv_testing_box_extra/"
+    save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_opencv_testing_box_testing/"
     os.makedirs(save_dir, exist_ok=True)
 
     #save grove overlay
