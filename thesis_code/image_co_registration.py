@@ -25,11 +25,12 @@ dir_visium = '/Volumes/Expansion/Co-registration'
 name_list = ['Func116']
 dir_dig_path = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best'
 
-#Find the color of the background pixels to select treshhold value separate the biopsy from the background
+
+#Find the color of the background pixels to select treshhold value for separating the biopsy from background
 def pixel_color(image_path):
     img_gray = cv2.imread(image_path, 0) #Image in grayscale
 
-    #coordinates to pick pixel from
+    #Coordinates to pick pixel from
     x = 20
     y = 20
     pixel_value = img_gray[y, x]
@@ -43,6 +44,7 @@ def pixel_color(image_path):
 
 
 #Select a tight box around the circular biopsy to scale better as the biopsies have different sizes
+#This gives better co-registartion than using the whole image with lots of background
 def biopsy_mask(rgb_image, thresh=230):
     gray_img = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
     mask = gray_img < thresh
@@ -51,8 +53,9 @@ def biopsy_mask(rgb_image, thresh=230):
     x_min, x_max = xs.min(), xs.max()  #left and right
     return x_min, y_min, x_max, y_max
 
-#Computing scaling factor
-def compute_scaling_factor(fixed_image, moving_image):  # fixed: Visium, moving: HoverNet results
+
+#Compute scaling factor
+def compute_scaling_factor(fixed_image, moving_image):  #Fixed: Visium, moving: HoverNet results
     height_fixed, width_fixed = fixed_image.shape[:2]
     height_moving, width_moving = moving_image.shape[:2]
 
@@ -67,9 +70,9 @@ def compute_scaling_factor(fixed_image, moving_image):  # fixed: Visium, moving:
 
 #Rotation and translation
 def func_manual_rotation(image, angle, tx, ty):
-    #Rotating by an arbitrary angle
+    #Rotating by a chosen angle
     #Get image dimensions
-    height, width = image.shape[:2] #take the two first values from (H, W, C
+    height, width = image.shape[:2] #take the two first values from (H, W, C)
 
     #Define the rotation parameters
     center = (width // 2, height // 2) #Center of rotation
@@ -80,7 +83,7 @@ def func_manual_rotation(image, angle, tx, ty):
     #Get the rotation matrix
     rotation_matrix = cv2.getRotationMatrix2D(center, rotation_angle, scale)
 
-    # Perform the affine transformation (rotation)
+    #Perform the affine transformation
     rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
 
     #Translation values
@@ -141,22 +144,22 @@ def func_co_reg(fixed_rgb, moving_rgb):
         fixed_matrix[i] = kp2[m.trainIdx].pt
 
 
-    #matrix, mask = cv2.estimateAffine2D(moving_matrix, fixed_matrix, cv2.RANSAC)
-    matrix, inliers = cv2.estimateAffinePartial2D(moving_matrix, fixed_matrix, method=cv2.RANSAC)
-
+    matrix, inliers = cv2.estimateAffine2D(moving_matrix, fixed_matrix, cv2.RANSAC) #Best to use estimateAffine2D!
+    #matrix, inliers = cv2.estimateAffinePartial2D(moving_matrix, fixed_matrix, cv2.RANSAC)
 
     matrix_resized = matrix.copy()
     matrix_resized[0, 2] /=file_reduction
     matrix_resized[1, 2] /=file_reduction
+ 
 
     #Using matrix to transform moving image to fixed image
     registered_image = cv2.warpAffine(moving_rgb, matrix_resized, (width, height))
 
-    rot_matrix = np.eye(3, dtype=np.float32)
-    rot_matrix[:2, :] = matrix_resized
+    #Affin transform-matrise
+    affine_transform_matrix = np.eye(3, dtype=np.float32)
+    affine_transform_matrix[:2, :] = matrix_resized
 
-
-    return registered_image, matrix_resized
+    return registered_image, affine_transform_matrix
  
 
 for name in (name_list):
@@ -172,7 +175,7 @@ for name in (name_list):
     #pixel_color(fixed_path)
     #pixel_color(moving_path)    
 
-    #OpenCV use BGR
+    #OpenCV uses BGR
     #Need RGB for matplotlib
     fixed_rgb = cv2.cvtColor(fixed_image, cv2.COLOR_BGR2RGB) #Converts BGR to RGB for processing
     moving_rgb = cv2.cvtColor(moving_image, cv2.COLOR_BGR2RGB)
@@ -186,17 +189,28 @@ for name in (name_list):
     #height_f, width_f = fixed_rgb.shape[:2]
     #moving_resized = cv2.resize(moving_scaled, (width_f, height_f), interpolation=cv2.INTER_CUBIC)
 
-    fx1, fy1, fx2, fy2 = biopsy_mask(fixed_rgb)
-    mx1, my1, mx2, my2 = biopsy_mask(moving_rgb)
+    #Biopsy mask finds box around the biopsies
+    fx1, fy1, fx2, fy2 = biopsy_mask(fixed_rgb) #fixed box
+    mx1, my1, mx2, my2 = biopsy_mask(moving_rgb) #moving box
 
-    fixed_crop  = fixed_rgb[fy1:fy2, fx1:fx2]
+    #Crops out the box with the biopsies to make registration better
+    fixed_crop  = fixed_rgb[fy1:fy2, fx1:fx2] 
     moving_crop = moving_rgb[my1:my2, mx1:mx2]
 
-    scaleH = fixed_crop.shape[0] / moving_crop.shape[0]
-    scaleW = fixed_crop.shape[1] / moving_crop.shape[1]
+    #Scaling the cropped biopsy
+    height_f = fixed_crop.shape[0]
+    width_f  = fixed_crop.shape[1]
 
+    height_m = moving_crop.shape[0]
+    width_m  = moving_crop.shape[1]
+
+    scaleH = height_f / height_m
+    scaleW = width_f  / width_m
+
+    #Scale whole moving image with the scaling factors
     moving_scaled = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC)
 
+    #Moving to the same dimensions as fixed
     height_f, width_f = fixed_rgb.shape[:2]
     moving_resized = cv2.resize(moving_scaled, (width_f, height_f), interpolation=cv2.INTER_CUBIC)
 
@@ -223,7 +237,7 @@ for name in (name_list):
 
     #Manual rotation
     #Manual rotation parameters [theta, dx, dy]
-    manual_rotation = [8, -100, 0]  #Func116
+    manual_rotation = [8, -100, 0]  #Func116, rotate 8 degrees, move -100 pixels in x, 0 pixels in y
 
     rotating_image = func_manual_rotation(moving_resized, *manual_rotation)
  
@@ -240,9 +254,8 @@ for name in (name_list):
     plt.axis("off")
     plt.show()
 
- 
 
-    save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_opencv_testing_box_testing/"
+    save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_best/"
     os.makedirs(save_dir, exist_ok=True)
 
     #save grove overlay
@@ -256,7 +269,7 @@ for name in (name_list):
     plt.imsave(os.path.join(save_dir, f"{name}_moving_registered.png"), reg_image)
 
     #save matrix
-    np.save(os.path.join(save_dir, f"{name}_rot_matrix.npy"), rot_matrix)
+    np.save(os.path.join(save_dir, f"{name}_affine_transform.npy"), rot_matrix)
 
     #save rotating image
     rot_png_path = os.path.join(save_dir, f"{name}_rotating_manual.png")
