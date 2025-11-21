@@ -61,13 +61,15 @@ def apply_registration(visium_image_path: str, rotation_matrix_path: str, type_m
     #Load the fixed_image (Visium)
     visium = cv2.imread(visium_image_path) #bgr
     visium_rgb = cv2.cvtColor(visium, cv2.COLOR_BGR2RGB)
+
     #Load type_map
-    type_map = cv2.imread(type_map_path, cv2.IMREAD_GRAYSCALE)
+    type_map = cv2.imread(type_map_path) #bgr
+    type_map_rgb = cv2.cvtColor(type_map, cv2.COLOR_BGR2RGB)
 
     #Find the boxes, same as in image_co_registration:
     #Biopsy mask finds box around the biopsies
     fx1, fy1, fx2, fy2 = biopsy_mask(visium_rgb) #fixed
-    mx1, my1, mx2, my2 = biopsy_mask(cv2.cvtColor(type_map, cv2.COLOR_GRAY2RGB)) #moving
+    mx1, my1, mx2, my2 = biopsy_mask(type_map_rgb) #moving
 
     #Crops out the box with the biopsies to make registration better
     fixed_crop  = visium_rgb[fy1:fy2, fx1:fx2] 
@@ -84,51 +86,46 @@ def apply_registration(visium_image_path: str, rotation_matrix_path: str, type_m
     scaleW = width_f  / width_m
 
     #Scale to same biopsy size with the scaling factors
-    moving_scaled = cv2.resize(type_map, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST)
+    type_map_scaled = cv2.resize(type_map_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST)
 
     #Moving to the same dimensions as visium
     height_f, width_f = visium_rgb.shape[:2]
-    moving_resized = cv2.resize(moving_scaled, (width_f, height_f), interpolation=cv2.INTER_NEAREST)
+    type_map_resized = cv2.resize(type_map_scaled, (width_f, height_f), interpolation=cv2.INTER_NEAREST)
 
     #Manual rotation and translation
     manual_rotation = [8, -100, 0]  #Func116
     angle, dx, dy = manual_rotation
-    mask_rotated = func_manual_rotation(moving_resized, angle, dx, dy)
+    mask_rotated = func_manual_rotation(type_map_resized, angle, dx, dy)
 
-    #Rotation matrix
+    #Load matrix
+    matrix_full = np.load(rotation_matrix_path) #3x3
+    matrix = matrix_full[:2, :] #2x3 til warpAffine
 
-    rot_matrix_full = np.load(rotation_matrix_path)  #3x3
-    rot_matrix = rot_matrix_full[:2, :]         #2x3 til warpAffine
-
-    #Dimenstions for the output image
+    #Dimensions for the output image
     output_dimensions = (width_f, height_f) #visium width and height
+    transformed_type_map = cv2.warpAffine(mask_rotated, matrix, output_dimensions)
 
-    transformed_type_map = cv2.warpAffine(mask_rotated, rot_matrix, output_dimensions)
+    return visium_rgb, type_map_rgb, transformed_type_map
 
-    return transformed_type_map
-
-result = apply_registration(path_visium, path_matrix, path_type_map)
+visium_rgb, type_map_original, type_map_registered = apply_registration(path_visium, path_matrix, path_type_map)
 
 #Plotting
-visium = cv2.imread(path_visium)
-visium_rgb = cv2.cvtColor(visium, cv2.COLOR_BGR2RGB)
+plt.figure(figsize=(15,5))
 
-plt.figure(figsize=(12, 4))
-plt.subplot(1, 3, 1)
+plt.subplot(1,3,1)
 plt.imshow(visium_rgb)
-plt.title("Visium HE")
+plt.title("HE Visium")
 plt.axis("off")
 
-plt.subplot(1, 3, 2)
-orig_mask = cv2.imread(path_type_map, cv2.IMREAD_GRAYSCALE)
-plt.imshow(orig_mask, cmap="gray")
+plt.subplot(1,3,2)
+plt.imshow(type_map_original)
 plt.title("Original type map")
 plt.axis("off")
 
-plt.subplot(1, 3, 3)
+plt.subplot(1,3,3)
 plt.imshow(visium_rgb)
-plt.imshow(result, cmap="jet", alpha=0.4)
-plt.title("Type map co-registrert")
+plt.imshow(type_map_registered, alpha=0.5)
+plt.title("Type map registrert")
 plt.axis("off")
 
 plt.tight_layout()
@@ -136,7 +133,7 @@ plt.show()
 
 #Save
 save_path = os.path.join(dir_save, "Func116_tpmap_registered.png")
-cv2.imwrite(save_path, result * 255)
+cv2.imwrite(save_path, type_map_registered)
 print("Saved:", save_path)
 
 
