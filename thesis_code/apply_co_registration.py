@@ -128,12 +128,15 @@ plt.imshow(type_map_registered, alpha=0.5)
 plt.title("Type map registrert")
 plt.axis("off")
 
+overlay_path = os.path.join(dir_save, "Func116_tpmap_registered_overlay.png")
+plt.savefig(overlay_path, dpi=300, bbox_inches='tight')
+print("Saved overlay:", overlay_path)
+
 plt.tight_layout()
 plt.show()
 
-#Save
 save_path = os.path.join(dir_save, "Func116_tpmap_registered.png")
-cv2.imwrite(save_path, type_map_registered)
+cv2.imwrite(save_path, cv2.cvtColor(type_map_registered, cv2.COLOR_RGB2BGR))
 print("Saved:", save_path)
 
 
