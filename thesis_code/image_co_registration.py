@@ -25,11 +25,12 @@ dir_visium = '/Volumes/Expansion/Co-registration'
 name_list = ['Func116']
 dir_dig_path = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best'
 
+
 #Find the color of the background pixels to select treshhold value for separating the biopsy from background
 def pixel_color(image_path):
     img_gray = cv2.imread(image_path, 0) #Image in grayscale
 
-    #coordinates to pick pixel from
+    #Coordinates to pick pixel from
     x = 20
     y = 20
     pixel_value = img_gray[y, x]
@@ -52,8 +53,9 @@ def biopsy_mask(rgb_image, thresh=230):
     x_min, x_max = xs.min(), xs.max()  #left and right
     return x_min, y_min, x_max, y_max
 
+
 #Compute scaling factor
-def compute_scaling_factor(fixed_image, moving_image):  # fixed: Visium, moving: HoverNet results
+def compute_scaling_factor(fixed_image, moving_image):  #Fixed: Visium, moving: HoverNet results
     height_fixed, width_fixed = fixed_image.shape[:2]
     height_moving, width_moving = moving_image.shape[:2]
 
@@ -148,14 +150,16 @@ def func_co_reg(fixed_rgb, moving_rgb):
     matrix_resized = matrix.copy()
     matrix_resized[0, 2] /=file_reduction
     matrix_resized[1, 2] /=file_reduction
+ 
 
     #Using matrix to transform moving image to fixed image
     registered_image = cv2.warpAffine(moving_rgb, matrix_resized, (width, height))
 
-    rot_matrix = np.eye(3, dtype=np.float32)
-    rot_matrix[:2, :] = matrix_resized
+    #Affin transform-matrise
+    affine_transform_matrix = np.eye(3, dtype=np.float32)
+    affine_transform_matrix[:2, :] = matrix_resized
 
-    return registered_image, matrix_resized
+    return registered_image, affine_transform_matrix
  
 
 for name in (name_list):
@@ -206,7 +210,7 @@ for name in (name_list):
     #Scale whole moving image with the scaling factors
     moving_scaled = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC)
 
-    #Moving the same dimensions as fixed
+    #Moving to the same dimensions as fixed
     height_f, width_f = fixed_rgb.shape[:2]
     moving_resized = cv2.resize(moving_scaled, (width_f, height_f), interpolation=cv2.INTER_CUBIC)
 
@@ -233,7 +237,7 @@ for name in (name_list):
 
     #Manual rotation
     #Manual rotation parameters [theta, dx, dy]
-    manual_rotation = [8, -100, 0]  #Func116
+    manual_rotation = [8, -100, 0]  #Func116, rotate 8 degrees, move -100 pixels in x, 0 pixels in y
 
     rotating_image = func_manual_rotation(moving_resized, *manual_rotation)
  
@@ -251,7 +255,7 @@ for name in (name_list):
     plt.show()
 
 
-    save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_opencv_Affine2d/"
+    save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_best/"
     os.makedirs(save_dir, exist_ok=True)
 
     #save grove overlay
@@ -265,7 +269,7 @@ for name in (name_list):
     plt.imsave(os.path.join(save_dir, f"{name}_moving_registered.png"), reg_image)
 
     #save matrix
-    np.save(os.path.join(save_dir, f"{name}_rot_matrix.npy"), rot_matrix)
+    np.save(os.path.join(save_dir, f"{name}_affine_transform.npy"), rot_matrix)
 
     #save rotating image
     rot_png_path = os.path.join(save_dir, f"{name}_rotating_manual.png")
