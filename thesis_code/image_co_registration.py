@@ -124,7 +124,7 @@ def func_co_reg(fixed_rgb, moving_rgb):
     height, width = fixed_rgb.shape[:2]
     registered_image = cv2.warpAffine(moving_rgb, matrix_resized, (width, height))
 
-    #Affin transform-matrise
+    #Affin transform-matrix
     affine_transform_matrix = np.eye(3, dtype=np.float32)
     affine_transform_matrix[:2, :] = matrix_resized
 
@@ -187,7 +187,7 @@ for name in (name_list):
     plt.show()
 
     #Func co reg
-    reg_image, rot_matrix = func_co_reg(fixed_rgb, rotating_image)
+    reg_image, affine_matrix = func_co_reg(fixed_rgb, rotating_image)
 
     overlay_fine = cv2.addWeighted(fixed_rgb, 0.5, reg_image, 0.5, 0)
     plt.imshow(overlay_fine)
@@ -199,18 +199,18 @@ for name in (name_list):
     save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/"
     os.makedirs(save_dir, exist_ok=True)
 
-    #save grove overlay
+    #Save grove overlay
     plt.imsave(os.path.join(save_dir, f"{name}_overlay_grov.png"), overlay)
     plt.imsave(os.path.join(save_dir, f"{name}_overlay_manual.png"), overlay2)
 
-    #save finjustert overlay
+    #Save finjustert overlay
     plt.imsave(os.path.join(save_dir, f"{name}_overlay_fine.png"), overlay_fine)
 
-    #save dregistered image (moving to aligned to fixed)
+    #Save registered image, moving aligned to fixed
     plt.imsave(os.path.join(save_dir, f"{name}_moving_registered.png"), reg_image)
 
-    #save matrix
-    np.save(os.path.join(save_dir, f"{name}_affine_transform.npy"), rot_matrix)
+    #Save matrix
+    np.save(os.path.join(save_dir, f"{name}_affine_transform.npy"), affine_matrix)
 
     #save rotating image
     rot_png_path = os.path.join(save_dir, f"{name}_rotating_manual.png")
