@@ -11,23 +11,24 @@ import matplotlib.pyplot as plt
 
 path_visium = "/Volumes/Expansion/Co-registration/Func116HEVisium.tif" #Visium
 path_type_map = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/Func116_tpmap_scaled.png" #Type map
-path_matrix = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_best/co_reg_biopsy/Func116_affine_transform.npy" #rotation matrix
-dir_save = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_best/co_reg_type_map/" #Saving directory
+path_matrix = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/co_reg_biopsy/Func116_affine_transform.npy" #rotation matrix
+dir_save = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/co_reg_type_map/" #Saving directory
 
 os.makedirs(dir_save, exist_ok=True)
 
 
 #Functions from image_co_registation:
+#Compute scaling factor
+def compute_scaling_factor(fixed_image, moving_image):  #Fixed: Visium, moving: HoverNet results
+    height_fixed, width_fixed = fixed_image.shape[:2]
+    height_moving, width_moving = moving_image.shape[:2]
 
-#Select a tight box around the circular biopsy to scale better as the biopsies have different sizes
-#This gives better co-registartion than using the whole image with lots of background
-def biopsy_mask(rgb_image, thresh=230):
-    gray_img = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
-    mask = gray_img < thresh
-    ys, xs = np.where(mask)
-    y_min, y_max = ys.min(), ys.max()  #top and bottom
-    x_min, x_max = xs.min(), xs.max()  #left and right
-    return x_min, y_min, x_max, y_max
+    scaleH = height_fixed / height_moving
+    scaleW = width_fixed / width_moving
+
+    #scale_factor = np.mean([scaleH, scaleW])
+
+    return scaleW, scaleH
 
 #Rotation and translation
 def func_manual_rotation(image, angle, tx, ty):
@@ -66,27 +67,8 @@ def apply_registration(visium_image_path: str, rotation_matrix_path: str, type_m
     type_map = cv2.imread(type_map_path) #bgr
     type_map_rgb = cv2.cvtColor(type_map, cv2.COLOR_BGR2RGB)
 
-    #Find the boxes, same as in image_co_registration:
-    #Biopsy mask finds box around the biopsies
-    fx1, fy1, fx2, fy2 = biopsy_mask(visium_rgb) #fixed
-    mx1, my1, mx2, my2 = biopsy_mask(type_map_rgb) #moving
-
-    #Crops out the box with the biopsies to make registration better
-    fixed_crop  = visium_rgb[fy1:fy2, fx1:fx2] 
-    moving_crop = type_map[my1:my2, mx1:mx2]
-
-    #Scaling the cropped biopsy
-    height_f = fixed_crop.shape[0]
-    width_f  = fixed_crop.shape[1]
-
-    height_m = moving_crop.shape[0]
-    width_m  = moving_crop.shape[1]
-
-    scaleH = height_f / height_m
-    scaleW = width_f  / width_m
-
-    #Scale to same biopsy size with the scaling factors
-    type_map_scaled = cv2.resize(type_map_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST)
+    scaleW, scaleH = compute_scaling_factor(visium_rgb, type_map_rgb)
+    type_map_scaled = cv2.resize(type_map_rgb, None, fx=scaleW,fy=scaleH, interpolation=cv2.INTER_NEAREST)
 
     #Moving to the same dimensions as visium
     height_f, width_f = visium_rgb.shape[:2]
@@ -140,3 +122,35 @@ cv2.imwrite(save_path, cv2.cvtColor(type_map_registered, cv2.COLOR_RGB2BGR))
 print("Saved:", save_path)
 
 
+
+#Select a tight box around the circular biopsy to scale better as the biopsies have different sizes
+#This gives better co-registartion than using the whole image with lots of background
+# def biopsy_mask(rgb_image, threshold=230):
+#     gray_img = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
+#     mask = gray_img < threshold
+#     ys, xs = np.where(mask)
+#     y_min, y_max = ys.min(), ys.max()  #top and bottom
+#     x_min, x_max = xs.min(), xs.max()  #left and right
+#     return x_min, y_min, x_max, y_max
+
+#Find the boxes, same as in image_co_registration:
+    #Biopsy mask finds box around the biopsies
+    # fx1, fy1, fx2, fy2 = biopsy_mask(visium_rgb) #fixed
+    # mx1, my1, mx2, my2 = biopsy_mask(type_map_rgb) #moving
+
+    # #Crops out the box with the biopsies to make registration better
+    # fixed_crop  = visium_rgb[fy1:fy2, fx1:fx2] 
+    # moving_crop = type_map[my1:my2, mx1:mx2]
+
+    # #Scaling the cropped biopsy
+    # height_f = fixed_crop.shape[0]
+    # width_f  = fixed_crop.shape[1]
+
+    # height_m = moving_crop.shape[0]
+    # width_m  = moving_crop.shape[1]
+
+    # scaleH = height_f / height_m
+    # scaleW = width_f  / width_m
+
+    #Scale to same biopsy size with the scaling factors
+    #type_map_scaled = cv2.resize(type_map_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST)
