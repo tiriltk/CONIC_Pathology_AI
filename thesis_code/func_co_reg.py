@@ -23,7 +23,7 @@ def func_co_reg(fixed_rgb, moving_rgb):
 
     #ORB detector with 5000 features
     orb = cv2.ORB_create(5000)
-
+    
     #Find keypoints (kp) and descriptors (des)
     #The first arg is the image, second arg is the mask
     kp1, des1 = orb.detectAndCompute(moving, None) #moving
@@ -39,7 +39,7 @@ def func_co_reg(fixed_rgb, moving_rgb):
     #Sort the matches from the Hamming distance
     matches = sorted(matches, key=lambda x: x.distance)
     sorted_matches = matches[:500]
-    n_matches = len(matches)
+    n_matches = len(sorted_matches)
    
     moving_matrix = np.zeros((n_matches, 2))
     fixed_matrix = np.zeros((n_matches, 2))
@@ -48,20 +48,21 @@ def func_co_reg(fixed_rgb, moving_rgb):
         moving_matrix[i] = kp1[m.queryIdx].pt
         fixed_matrix[i] = kp2[m.trainIdx].pt
 
-    #matrix, mask = cv2.estimateAffine2D(moving_matrix, fixed_matrix, cv2.RANSAC)
 
-    matrix, inliers = cv2.estimateAffinePartial2D(moving_matrix, fixed_matrix, method=cv2.RANSAC)
+    matrix, inliers = cv2.estimateAffine2D(moving_matrix, fixed_matrix, cv2.RANSAC) #Best to use estimateAffine2D!
+    #matrix, inliers = cv2.estimateAffinePartial2D(moving_matrix, fixed_matrix, cv2.RANSAC)
 
     matrix_resized = matrix.copy()
     matrix_resized[0, 2] /=file_reduction
     matrix_resized[1, 2] /=file_reduction
+ 
 
     #Using matrix to transform moving image to fixed image
     registered_image = cv2.warpAffine(moving_rgb, matrix_resized, (width, height))
 
-    rot_matrix = np.eye(3, dtype=np.float32)
-    rot_matrix[:2, :] = matrix_resized
+    #Affin transform-matrise
+    affine_transform_matrix = np.eye(3, dtype=np.float32)
+    affine_transform_matrix[:2, :] = matrix_resized
 
-
-    return registered_image, matrix_resized
+    return registered_image, affine_transform_matrix
  

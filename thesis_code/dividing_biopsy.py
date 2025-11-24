@@ -7,7 +7,6 @@ import argparse
 Divides the PNG image into four parts and saves them to open the biopsies
 """
 
-
 def split_image(image_path, output_dir):
     img = Image.open(image_path)
 

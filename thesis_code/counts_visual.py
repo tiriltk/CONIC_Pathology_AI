@@ -48,14 +48,5 @@ axes[0].set_ylabel('Cell count')
 axes[0].set_title('Total cell counts per type')
 axes[0].tick_params(axis='x', rotation=30)
 
-axes[1].pie(
-    totals.values,
-    labels=totals.index,
-    autopct='%1.0f%%',
-    startangle=90,
-    textprops={'color': 'white', 'weight': 'bold'}
-)
-axes[1].set_title('Cell type proportions')
-
 plt.tight_layout()
 plt.show()
