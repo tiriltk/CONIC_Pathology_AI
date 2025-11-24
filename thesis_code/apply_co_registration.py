@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 path_visium = "/Volumes/Expansion/Co-registration/Func116HEVisium.tif" #Visium
 path_type_map = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/Func116_tpmap_scaled.png" #Type map
-path_matrix = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/co_reg_biopsy/Func116_affine_transform.npy" #rotation matrix
+path_matrix = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/co_reg_biopsy/Func116_affine_transform.npy" #Affine matrix
 dir_save = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/co_reg_type_map/" #Saving directory
 
 os.makedirs(dir_save, exist_ok=True)
@@ -58,7 +58,7 @@ def func_manual_rotation(image, angle, tx, ty):
     return translated_image
 
 
-def apply_registration(visium_image_path: str, rotation_matrix_path: str, type_map_path: str):
+def apply_registration(visium_image_path: str, affine_matrix_path: str, type_map_path: str):
     #Load the fixed_image (Visium)
     visium = cv2.imread(visium_image_path) #bgr
     visium_rgb = cv2.cvtColor(visium, cv2.COLOR_BGR2RGB)
@@ -80,7 +80,7 @@ def apply_registration(visium_image_path: str, rotation_matrix_path: str, type_m
     mask_rotated = func_manual_rotation(type_map_resized, angle, dx, dy)
 
     #Load matrix
-    matrix_full = np.load(rotation_matrix_path) #3x3
+    matrix_full = np.load(affine_matrix_path) #3x3
     matrix = matrix_full[:2, :] #2x3 til warpAffine
 
     #Dimensions for the output image
