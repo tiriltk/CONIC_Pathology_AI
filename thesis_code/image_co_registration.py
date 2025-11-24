@@ -26,34 +26,6 @@ name_list = ['Func116']
 dir_dig_path = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best'
 
 
-#Find the color of the background pixels to select treshhold value for separating the biopsy from background
-def pixel_color(image_path):
-    img_gray = cv2.imread(image_path, 0) #Image in grayscale
-
-    #Coordinates to pick pixel from
-    x = 20
-    y = 20
-    pixel_value = img_gray[y, x]
-
-    print(f"The pixel value: {pixel_value}")
-
-    #The pixel value for fixed: (10x10) = 238, (5x5) = 237, (20x20) = 239
-    #The pixel value for moving: (10x20) = 240,(5x5) = 240, (20x20) = 241
-
-    return pixel_value
-
-
-#Select a tight box around the circular biopsy to scale better as the biopsies have different sizes
-#This gives better co-registartion than using the whole image with lots of background
-def biopsy_mask(rgb_image, thresh=230):
-    gray_img = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
-    mask = gray_img < thresh
-    ys, xs = np.where(mask)
-    y_min, y_max = ys.min(), ys.max()  #top and bottom
-    x_min, x_max = xs.min(), xs.max()  #left and right
-    return x_min, y_min, x_max, y_max
-
-
 #Compute scaling factor
 def compute_scaling_factor(fixed_image, moving_image):  #Fixed: Visium, moving: HoverNet results
     height_fixed, width_fixed = fixed_image.shape[:2]
@@ -63,10 +35,8 @@ def compute_scaling_factor(fixed_image, moving_image):  #Fixed: Visium, moving: 
     scaleW = width_fixed / width_moving
 
     #scale_factor = np.mean([scaleH, scaleW])
-    #return scale_factor
 
     return scaleW, scaleH
-
 
 #Rotation and translation
 def func_manual_rotation(image, angle, tx, ty):
@@ -104,7 +74,6 @@ Then does fine adjustments and aligments.
 
 def func_co_reg(fixed_rgb, moving_rgb):
     file_reduction = 0.2 #reduce size
-    height, width = fixed_rgb.shape[:2]
 
     #Convert both to grayscale
     fixed_image = cv2.cvtColor(fixed_rgb, cv2.COLOR_RGB2GRAY)
@@ -151,8 +120,8 @@ def func_co_reg(fixed_rgb, moving_rgb):
     matrix_resized[0, 2] /=file_reduction
     matrix_resized[1, 2] /=file_reduction
  
-
     #Using matrix to transform moving image to fixed image
+    height, width = fixed_rgb.shape[:2]
     registered_image = cv2.warpAffine(moving_rgb, matrix_resized, (width, height))
 
     #Affin transform-matrise
@@ -180,37 +149,9 @@ for name in (name_list):
     fixed_rgb = cv2.cvtColor(fixed_image, cv2.COLOR_BGR2RGB) #Converts BGR to RGB for processing
     moving_rgb = cv2.cvtColor(moving_image, cv2.COLOR_BGR2RGB)
 
-    #scale = compute_scaling_factor(fixed_rgb, moving_rgb)
-    #moving_scaled = cv2.resize(moving_rgb, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
-
-    #scaleW, scaleH = compute_scaling_factor(fixed_rgb, moving_rgb)
-    #moving_scaled = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC)
-
-    #height_f, width_f = fixed_rgb.shape[:2]
-    #moving_resized = cv2.resize(moving_scaled, (width_f, height_f), interpolation=cv2.INTER_CUBIC)
-
-    #Biopsy mask finds box around the biopsies
-    fx1, fy1, fx2, fy2 = biopsy_mask(fixed_rgb) #fixed box
-    mx1, my1, mx2, my2 = biopsy_mask(moving_rgb) #moving box
-
-    #Crops out the box with the biopsies to make registration better
-    fixed_crop  = fixed_rgb[fy1:fy2, fx1:fx2] 
-    moving_crop = moving_rgb[my1:my2, mx1:mx2]
-
-    #Scaling the cropped biopsy
-    height_f = fixed_crop.shape[0]
-    width_f  = fixed_crop.shape[1]
-
-    height_m = moving_crop.shape[0]
-    width_m  = moving_crop.shape[1]
-
-    scaleH = height_f / height_m
-    scaleW = width_f  / width_m
-
-    #Scale whole moving image with the scaling factors
+    scaleW, scaleH = compute_scaling_factor(fixed_rgb, moving_rgb)
     moving_scaled = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC)
 
-    #Moving to the same dimensions as fixed
     height_f, width_f = fixed_rgb.shape[:2]
     moving_resized = cv2.resize(moving_scaled, (width_f, height_f), interpolation=cv2.INTER_CUBIC)
 
@@ -255,7 +196,7 @@ for name in (name_list):
     plt.show()
 
 
-    save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_reg_best/"
+    save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/"
     os.makedirs(save_dir, exist_ok=True)
 
     #save grove overlay
@@ -274,3 +215,59 @@ for name in (name_list):
     #save rotating image
     rot_png_path = os.path.join(save_dir, f"{name}_rotating_manual.png")
     cv2.imwrite(rot_png_path, cv2.cvtColor(rotating_image, cv2.COLOR_RGB2BGR))
+
+
+
+
+    # #Find the color of the background pixels to select treshhold value for separating the biopsy from background
+    # def pixel_color(image_path):
+    #     img_gray = cv2.imread(image_path, 0) #Image in grayscale
+
+    #     #Coordinates to pick pixel from
+    #     x = 20
+    #     y = 20
+    #     pixel_value = img_gray[y, x]
+
+    #     print(f"The pixel value: {pixel_value}")
+
+    #     #The pixel value for fixed: (10x10) = 238, (5x5) = 237, (20x20) = 239
+    #     #The pixel value for moving: (10x20) = 240,(5x5) = 240, (20x20) = 241
+
+    #     return pixel_value
+
+
+    #Select a tight box around the circular biopsy to scale better as the biopsies have different sizes
+    #This gives better co-registartion than using the whole image with lots of background
+    # def biopsy_mask(rgb_image, threshold=230):
+    #     gray_img = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
+    #     mask = gray_img < threshold
+    #     ys, xs = np.where(mask)
+    #     y_min, y_max = ys.min(), ys.max()  #top and bottom
+    #     x_min, x_max = xs.min(), xs.max()  #left and right
+    #     return x_min, y_min, x_max, y_max
+
+
+    #Biopsy mask finds box around the biopsies
+    #fx1, fy1, fx2, fy2 = biopsy_mask(fixed_rgb) #fixed box
+    #mx1, my1, mx2, my2 = biopsy_mask(moving_rgb) #moving box
+
+    #Crops out the box with the biopsies to make registration better
+    #fixed_crop  = fixed_rgb[fy1:fy2, fx1:fx2] 
+    #moving_crop = moving_rgb[my1:my2, mx1:mx2]
+
+    #Scaling the cropped biopsy
+    #height_f = fixed_crop.shape[0]
+    #width_f  = fixed_crop.shape[1]
+
+    #height_m = moving_crop.shape[0]
+    #width_m  = moving_crop.shape[1]
+
+    #scaleH = height_f / height_m
+    #scaleW = width_f  / width_m
+
+    #Scale whole moving image with the scaling factors
+    #moving_scaled = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC)
+
+    #Moving to the same dimensions as fixed
+    #height_f, width_f = fixed_rgb.shape[:2]
+    #moving_resized = cv2.resize(moving_scaled, (width_f, height_f), interpolation=cv2.INTER_CUBIC)
