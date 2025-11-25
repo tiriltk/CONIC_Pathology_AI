@@ -35,8 +35,8 @@ csv_11640_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_outp
 cell_types = ['neoplastic', 'inflammatory', 'connective', 'dead', 'epithelial']
 
 #Model_unfiltered contains patches with zero counts because there are no cells in some areas
-model1_unfiltered =  pd.read_csv(csv_11620_best) 
-model2_unfiltered = pd.read_csv(csv_11620_second)
+model1_unfiltered =  pd.read_csv(csv_11640_best) 
+model2_unfiltered = pd.read_csv(csv_11640_second)
 
 #Mask to keep patches where at least one of the models finds cells
 #Conditions
@@ -65,7 +65,7 @@ for type in cell_types:
     print(f"{type}: U Statistics = {stat:.2f}, P Value = {p:.4f}")
 
 
-#Plott to visualize
+#Plotting to visualize
 df_visualize = pd.DataFrame({
     'Value': pd.concat([model1[cell_types].melt()['value'], model2[cell_types].melt()['value']]),
     'Cell type': list(model1[cell_types].melt()['variable'])*2,
@@ -87,11 +87,11 @@ plt.show()
 #Histograms
 for type in cell_types:
     plt.figure(figsize=(6,4))
-    plt.hist(model1[type], bins=15, alpha=0.6, label='Model 1', color='royalblue')
-    plt.hist(model2[type], bins=15, alpha=0.6, label='Model 2', color='hotpink')
+    plt.hist(model1[type], bins=20, alpha=0.6, label='Model 1', color='royalblue')
+    plt.hist(model2[type], bins=20, alpha=0.6, label='Model 2', color='hotpink')
     plt.title(f"Histogram of {type} counts")
     plt.xlabel("Counts")
-    plt.ylabel("Frequency")
+    plt.ylabel("Patches")
     plt.legend()
     plt.tight_layout()
     plt.show()
