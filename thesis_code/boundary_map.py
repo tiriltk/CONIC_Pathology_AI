@@ -20,8 +20,8 @@ color_class = np.array([0, 200, 255]) # yellow example
 #colors = {0: (0, 0, 0), 1: (0, 200, 255), 2: (0, 255, 0), 3: (255, 255, 0), 4: (127, 127, 127), 5: (255, 0, 0)}
 # color order nuclei: backgroun (black), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (red)
 
-mask = np.all(img == color_class, axis=2).astype(np.uint8) * 255
-#cv2.imwrite("boundary_mask.png", mask)
+mask = np.all(img == color_class, axis=2).astype(np.uint8)
+cv2.imwrite("boundary_mask.png", mask)
 
 plt.imshow(img)
 plt.axis("off")
