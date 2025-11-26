@@ -24,7 +24,7 @@ from PIL import Image
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, output_dir, output_dir_dataframe, output_dir_dataframe_p, output_dir_tp, patch_mask_binary, checkpoint0, checkpoint1, epoch_idx=79, dataset="pannuke", nuclei_marker="fill"):
+def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, output_dir, output_dir_dataframe, output_dir_dataframe_p, output_dir_tp, patch_mask_binary, checkpoint0, checkpoint1, epoch_idx=79, dataset="pannuke", nuclei_marker="border_only"):
     valid_indices = range(len(imgs_load_array))
     #valid_indices = range(len(imgs_load_array-1 ))
     
@@ -96,13 +96,13 @@ def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, 
     
     # Insert column with patch number for each result
     column_name = "patch_nbr"
-    column_values = [int(name.split('_')[1].split('.')[0]) for name in image_names] # Extracting image numbers using string manipulation
+    column_values = [int(name.split('_')[1].split('.')[0]) for name in image_names] #Extracting image numbers using string manipulation
     nuclei_counts_df_pred.insert(0, column_name, column_values)
     # Print and save the dataframe with the nuclei types and counts
     print(f'{nuclei_counts_df_pred}')
     nuclei_counts_df_pred.to_csv(output_dir_dataframe, index=False)
     
-    # Create and save overlay + extract dataframe with pixel counts for nuclei types
+    #Create and save overlay + extract dataframe with pixel counts for nuclei types
     pixel_count_df = visualize_no_gt(imgs=imgs_load_array, imgs_names=image_names, pred=labels_array_pred , output_dir=output_dir, dataset=dataset, nuclei_marker=nuclei_marker)
     pixel_count_df.insert(0, column_name, column_values)
     # Print and save the dataframe
@@ -197,9 +197,10 @@ if __name__ == "__main__":
     #parser.add_argument('--exp_name1', type=str, default='hover_paper_conic_seresnext101_00')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
     
-    parser.add_argument("--nuclei_marker", choices = ["border", "fill"], default="fill", help ="Choose how you want nuclei to be marked in overlay. Choose either 'border' or 'fill' (default: %(default)s)" )
+    parser.add_argument("--nuclei_marker", choices = ["border", "fill", "border_only"], default="border_only", help ="Choose how you want nuclei to be marked in overlay. Choose either 'border' or 'fill' (default: %(default)s)" )
     # nuclei_marker = "fill"    # If you want the whole nuclei colored
     # nuclei_marker = "border"  # If you only want the nuclei border/outline marked
+     # nuclei_marker = "border_only"  # If you only want only the nuclei border/outline 
     
     parser.add_argument("--tile_path", type=str, required=True, help = "Path to images you want analyzed")
     # tile_path = "/.../patches/HE_xxx/"
