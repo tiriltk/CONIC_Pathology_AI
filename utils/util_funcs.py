@@ -97,6 +97,7 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
             dilation = cv2.dilate(binary_map, kernal, iterations=1)
             inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
             instance_tp = np.unique(instance_type[indexes])
+
             assert len(instance_tp) == 1, "wrong instance type correspondence! "
             if instance_tp[0] == 0: # If instance has no type label, exclude it from overlay
                 continue
@@ -104,6 +105,36 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
                 pixel_per_type[str(instance_tp[0])] += count_255_pixels
                 img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]-1)] # (instance_tp[0]-1) corrects for no label nuclei being removed from overlay
                 img_overlay[indexes] = img[indexes]
+
+    elif nuclei_marker == "border_only":
+        instance_list = np.unique(instance_mask)[1:]
+        img_overlay = np.zeros_like(img)
+        for instance in instance_list:
+            binary_map = np.zeros_like(instance_mask, dtype=np.uint8)
+
+            indexes = np.where(instance_mask == instance)
+
+            binary_map[indexes] = 255
+
+            count_255_pixels = np.sum(binary_map == 255)
+
+            kernal = np.ones((5, 5), np.uint8)
+            dilation = cv2.dilate(binary_map, kernal, iterations=1)
+
+            border_map = (dilation == 255) & (binary_map == 0)
+            border_idx = np.where(border_map)
+            #inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
+            instance_tp = np.unique(instance_type[indexes])
+
+            assert len(instance_tp) == 1, "wrong instance type correspondence! "
+            if instance_tp[0] == 0:
+                continue
+            else:
+                pixel_per_type[str(instance_tp[0])] += count_255_pixels
+
+                #Only border
+                img_overlay[border_idx] = label_colors[(instance_tp[0]-1)]
+                # img_overlay[indexes] = img[indexes]
 
     #for chosen dataset
     if dataset == "pannuke":
