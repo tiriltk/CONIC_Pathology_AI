@@ -4,7 +4,7 @@ def summarize(values, name="Metric"):
     arr = np.array(values, dtype=float)
     mean = arr.mean()
     std = arr.std(ddof=1)
-    print(f"{name}: {mean:.4f} ± {std:.4f}")
+    print(f"{name}: Mean {mean:.4f} Std {std:.4f}")
     return mean, std
 
 mpq_values0 = [

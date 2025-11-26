@@ -2,6 +2,12 @@ import numpy as np
 import os
 from PIL import Image
 
+"""
+Takes the tp_results.npy file and makes it into a PNG, with colored classes for cell types. 
+PNG further used to make WSI so we get the type maps. 
+
+"""
+
 def colored_png(tp_results_path: str, output_dir: str, offset: int):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)

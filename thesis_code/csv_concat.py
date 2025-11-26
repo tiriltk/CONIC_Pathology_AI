@@ -1,5 +1,5 @@
 #Concatenating CSV
-#combining two csv with same structure
+#Combining two csv with same structure
 
 import pandas as pd
 

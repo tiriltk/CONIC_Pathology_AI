@@ -33,11 +33,11 @@ csv_05040_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_outp
 csv_11640_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_second/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_combined.csv'
 
 
-# Read the CSV file
+#Read the csv file
 df = pd.read_csv(csv_04440_second)
 df.head()
 
-#sum up counts for each cell type
+#Sum up counts for each cell type
 totals = df[['neoplastic', 'inflammatory', 'connective', 'dead', 'epithelial']].sum()
 print(totals)
 
@@ -47,15 +47,6 @@ axes[0].bar(totals.index, totals.values)
 axes[0].set_ylabel('Cell count')
 axes[0].set_title('Total cell counts per type')
 axes[0].tick_params(axis='x', rotation=30)
-
-axes[1].pie(
-    totals.values,
-    labels=totals.index,
-    autopct='%1.0f%%',
-    startangle=90,
-    textprops={'color': 'white', 'weight': 'bold'}
-)
-axes[1].set_title('Cell type proportions')
 
 plt.tight_layout()
 plt.show()
