@@ -200,7 +200,7 @@ if __name__ == "__main__":
     parser.add_argument("--nuclei_marker", choices = ["border", "fill", "border_only"], default="border_only", help ="Choose how you want nuclei to be marked in overlay. Choose either 'border' or 'fill' (default: %(default)s)" )
     # nuclei_marker = "fill"    # If you want the whole nuclei colored
     # nuclei_marker = "border"  # If you only want the nuclei border/outline marked
-     # nuclei_marker = "border_only"  # If you only want only the nuclei border/outline 
+     # nuclei_marker = "border_only"  # If you only want the nuclei border without HE image 
     
     parser.add_argument("--tile_path", type=str, required=True, help = "Path to images you want analyzed")
     # tile_path = "/.../patches/HE_xxx/"
