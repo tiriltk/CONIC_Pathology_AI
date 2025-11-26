@@ -5,7 +5,7 @@
 #The RGB values are not exact
 
 #Correct approach:
-#Re-run HoVer-Net inference and save the boundary (.npy file) directly
+#Re-run HoVer-Net inference and get the boundary directly with border_only 
 
 import cv2
 import numpy as np

@@ -38,13 +38,13 @@ def colored_png(tp_results_path: str, output_dir: str, offset: int):
 
 if __name__ == "__main__":
     colored_png(
-        "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/tp_results/tp_results_from_0_to_599.npy",
-        "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/tp_results_colors_part1",
+        "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/tp_results/tp_results_from_0_to_599.npy",
+        "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/tp_results_colors_part1",
         offset = 0
     )
 
     colored_png(
-        "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/tp_results/tp_results_from_600_to_1087.npy",
-        "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/tp_results_colors_part2",
+        "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/tp_results/tp_results_from_600_to_1087.npy",
+        "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/tp_results_colors_part2",
         offset = 600
     )

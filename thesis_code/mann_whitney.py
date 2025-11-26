@@ -52,25 +52,23 @@ print(model1)
 print(model2)
 
 assert len(model1_unfiltered) == len(model2_unfiltered), "Mismatch in patch count"
-assert len(model1) == len(model2), "Mismatch after masking, check patch alignment"
+assert len(model1) == len(model2), "Mismatch after masking"
 
 
 #Mann-Whitney U Test
 #Print
 p_values = {}
 print("Mann–Whitney U test results:")
-for type in cell_types:
-    stat, p = mannwhitneyu(model1[type], model2[type])
-    p_values[type] = p
-    print(f"{type}: U Statistics = {stat:.2f}, P Value = {p:.4f}")
-
+for t in cell_types:
+    stat, p = mannwhitneyu(model1[t], model2[t], alternative='two-sided')
+    p_values[t] = p
+    print(f"{t}: U Statistics = {stat:.2f}, P Value = {p:.4f}")
 
 #Plotting to visualize
 df_visualize = pd.DataFrame({
     'Value': pd.concat([model1[cell_types].melt()['value'], model2[cell_types].melt()['value']]),
     'Cell type': list(model1[cell_types].melt()['variable'])*2,
     'Model': ['Model 1']*len(model1[cell_types].melt()) + ['Model 2']*len(model2[cell_types].melt())})
-
 
 #Boxplot
 plt.figure(figsize=(10,6))
