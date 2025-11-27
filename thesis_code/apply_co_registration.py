@@ -10,9 +10,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 path_visium = "/Volumes/Expansion/Co-registration/Func116HEVisium.tif" #Visium
-path_type_map = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/Func116_tpmap_scaled.png" #Type map
+#path_type_map = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/Func116_tpmap_scaled.png" #Type map
+path_type_map = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/wsi_border/correct_result/bordered_type_map.png"
 path_matrix = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/co_reg_biopsy/Func116_affine_transform.npy" #Affine matrix
-dir_save = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/co_reg_type_map/" #Saving directory
+dir_save = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/wsi_border/correct_result/co_reg_type_map2/" #Saving directory
 
 os.makedirs(dir_save, exist_ok=True)
 
@@ -46,14 +47,19 @@ def func_manual_rotation(image, angle, tx, ty):
     rotation_matrix = cv2.getRotationMatrix2D(center, rotation_angle, scale)
 
     #Perform the affine transformation
-    rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
+    #rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
+
+    #Nearest neighbour for border label bilde
+    rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height), flags=cv2.INTER_NEAREST)
 
     #Translation values
     translate_x = tx
     translate_y = ty
     translation_matrix = np.float32([[1, 0, translate_x],[0, 1, translate_y]])
 
-    translated_image = cv2.warpAffine(rotated_image, translation_matrix, (width, height))
+    #translated_image = cv2.warpAffine(rotated_image, translation_matrix, (width, height))
+
+    translated_image = cv2.warpAffine(rotated_image, translation_matrix, (width, height), flags=cv2.INTER_NEAREST)
 
     return translated_image
 
@@ -85,7 +91,9 @@ def apply_registration(visium_image_path: str, affine_matrix_path: str, type_map
 
     #Dimensions for the output image
     output_dimensions = (width_f, height_f) #visium width and height
-    transformed_type_map = cv2.warpAffine(mask_rotated, matrix, output_dimensions)
+    #transformed_type_map = cv2.warpAffine(mask_rotated, matrix, output_dimensions)
+
+    transformed_type_map = cv2.warpAffine(mask_rotated, matrix, output_dimensions, flags=cv2.INTER_NEAREST)
 
     return visium_rgb, type_map_rgb, transformed_type_map
 
