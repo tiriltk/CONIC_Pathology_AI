@@ -4,7 +4,7 @@ import sys
 import argparse
 
 """
-Divides the PNG image into four parts and saves them to open the biopsies
+Divides the PNG image into four parts and saves them to be able to open the biopsies
 """
 
 def split_image(image_path, output_dir):
@@ -17,8 +17,8 @@ def split_image(image_path, output_dir):
     half_height = height // 2
 
     #Coordinates for each part (left, top, right, bottom)
-    topleft = (0, 0, half_width, half_height) #top left box
-    topright = (half_width, 0, width, half_height) #top right box
+    topleft = (0, 0, half_width, half_height) #top left
+    topright = (half_width, 0, width, half_height) #top right 
     bottomleft = (0, half_height, half_width, height) #bottom left
     bottomright = (half_width, half_height, width, height) #bottom right
 
