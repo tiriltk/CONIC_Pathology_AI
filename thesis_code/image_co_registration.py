@@ -5,11 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-#import sys 
-#script_dir = os.path.dirname(os.path.abspath(__file__))
-#sys.path.append(script_dir)
-#from func_co_reg import func_co_reg
-
 """
 The image_co_registration.py script: 
 Loads fixed and moving image. 
@@ -199,11 +194,11 @@ for name in (name_list):
     save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/"
     os.makedirs(save_dir, exist_ok=True)
 
-    #Save grove overlay
+    #Save 'grove' overlay
     plt.imsave(os.path.join(save_dir, f"{name}_overlay_grov.png"), overlay)
     plt.imsave(os.path.join(save_dir, f"{name}_overlay_manual.png"), overlay2)
 
-    #Save finjustert overlay
+    #Save 'finjustert' overlay
     plt.imsave(os.path.join(save_dir, f"{name}_overlay_fine.png"), overlay_fine)
 
     #Save registered image, moving aligned to fixed
@@ -212,10 +207,9 @@ for name in (name_list):
     #Save matrix
     np.save(os.path.join(save_dir, f"{name}_affine_transform.npy"), affine_matrix)
 
-    #save rotating image
+    #Save rotating image
     rot_png_path = os.path.join(save_dir, f"{name}_rotating_manual.png")
     cv2.imwrite(rot_png_path, cv2.cvtColor(rotating_image, cv2.COLOR_RGB2BGR))
-
 
 
 

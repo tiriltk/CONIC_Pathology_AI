@@ -8,10 +8,10 @@ Then does fine adjustments and aligments.
 """
 
 def func_co_reg(fixed_rgb, moving_rgb):
-    file_reduction = 0.2 #reduce size
+    file_reduction = 0.2 #reduce size, same factor as matlab 
     height, width = fixed_rgb.shape[:2]
 
-    #Convert both to grayscale
+    #Convert to grayscale
     fixed_image = cv2.cvtColor(fixed_rgb, cv2.COLOR_RGB2GRAY)
     moving_image = cv2.cvtColor(moving_rgb, cv2.COLOR_RGB2GRAY)
 
@@ -33,10 +33,10 @@ def func_co_reg(fixed_rgb, moving_rgb):
     #Brute force matcher with Hamming distance as measurement mode
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
-    #Match the sets of desciptors
+    #Match the desciptors
     matches = matcher.match(des1, des2)
 
-    #Sort the matches from the Hamming distance
+    #Sort the matches from the distance
     matches = sorted(matches, key=lambda x: x.distance)
     sorted_matches = matches[:500]
     n_matches = len(sorted_matches)
@@ -56,11 +56,10 @@ def func_co_reg(fixed_rgb, moving_rgb):
     matrix_resized[0, 2] /=file_reduction
     matrix_resized[1, 2] /=file_reduction
  
-
     #Using matrix to transform moving image to fixed image
     registered_image = cv2.warpAffine(moving_rgb, matrix_resized, (width, height))
 
-    #Affin transform-matrise
+    #Affin transform matrix
     affine_transform_matrix = np.eye(3, dtype=np.float32)
     affine_transform_matrix[:2, :] = matrix_resized
 

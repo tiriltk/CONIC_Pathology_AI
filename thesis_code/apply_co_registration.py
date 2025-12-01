@@ -49,7 +49,7 @@ def func_manual_rotation(image, angle, tx, ty):
     #Perform the affine transformation
     #rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
 
-    #Nearest neighbour for border label bilde
+    #Nearest neighbour
     rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height), flags=cv2.INTER_NEAREST)
 
     #Translation values
@@ -58,14 +58,13 @@ def func_manual_rotation(image, angle, tx, ty):
     translation_matrix = np.float32([[1, 0, translate_x],[0, 1, translate_y]])
 
     #translated_image = cv2.warpAffine(rotated_image, translation_matrix, (width, height))
-
     translated_image = cv2.warpAffine(rotated_image, translation_matrix, (width, height), flags=cv2.INTER_NEAREST)
 
     return translated_image
 
 
 def apply_registration(visium_image_path: str, affine_matrix_path: str, type_map_path: str):
-    #Load the fixed_image (Visium)
+    #Load fixed_image 
     visium = cv2.imread(visium_image_path) #bgr
     visium_rgb = cv2.cvtColor(visium, cv2.COLOR_BGR2RGB)
 
@@ -74,7 +73,7 @@ def apply_registration(visium_image_path: str, affine_matrix_path: str, type_map
     type_map_rgb = cv2.cvtColor(type_map, cv2.COLOR_BGR2RGB)
 
     scaleW, scaleH = compute_scaling_factor(visium_rgb, type_map_rgb)
-    type_map_scaled = cv2.resize(type_map_rgb, None, fx=scaleW,fy=scaleH, interpolation=cv2.INTER_NEAREST)
+    type_map_scaled = cv2.resize(type_map_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST)
 
     #Moving to the same dimensions as visium
     height_f, width_f = visium_rgb.shape[:2]
@@ -91,8 +90,8 @@ def apply_registration(visium_image_path: str, affine_matrix_path: str, type_map
 
     #Dimensions for the output image
     output_dimensions = (width_f, height_f) #visium width and height
-    #transformed_type_map = cv2.warpAffine(mask_rotated, matrix, output_dimensions)
 
+    #transformed_type_map = cv2.warpAffine(mask_rotated, matrix, output_dimensions)
     transformed_type_map = cv2.warpAffine(mask_rotated, matrix, output_dimensions, flags=cv2.INTER_NEAREST)
 
     return visium_rgb, type_map_rgb, transformed_type_map
@@ -132,7 +131,7 @@ print("Saved:", save_path)
 
 
 #Select a tight box around the circular biopsy to scale better as the biopsies have different sizes
-#This gives better co-registartion than using the whole image with lots of background
+#Instead of using the whole image with lots of background
 # def biopsy_mask(rgb_image, threshold=230):
 #     gray_img = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
 #     mask = gray_img < threshold
