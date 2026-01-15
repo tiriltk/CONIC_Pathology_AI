@@ -4,14 +4,19 @@ import numpy as np
 
 #Set the black borders on the filled type map
 
-type_map_path = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/Func116_tpmap_scaled.png"
-black_border_path = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/wsi_border/black_borders10.png"
-output_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/wsi_border/"
+# type_map_path = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_second/output_fill/Func116_ST_HE_40x_BF_01/wsi_fill/whole_image_scaled.png"
+# black_border_path = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_second/output_border/Func116_ST_HE_40x_BF_01/wsi_border/black_borders10.png"
+# output_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_second/output_border/Func116_ST_HE_40x_BF_01/wsi_border_type_map/"
+
+type_map_path = "/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/tp_results/whole_image_scaled.png"
+black_border_path = "/Volumes/Expansion/biopsy_results/conic/40x/output_border_only/Func116_ST_HE_40x_BF_01/wsi_border/black_borders10.png"
+output_dir = "/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/wsi_border_type_map/"
 
 os.makedirs(output_dir, exist_ok=True)
 
 #Load type map
 type_img = cv2.imread(type_map_path)
+
 #Load border map
 border_img = cv2.imread(black_border_path)
 
