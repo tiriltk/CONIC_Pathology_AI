@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 
 #Co-registered type map with borders overlayed
-type_map_path = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/wsi_border/correct_result/co_reg_type_map_nearest/Func116_tpmap_registered.png"
-out_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/wsi_border/correct_result/binary_maps_coreg_combined_test/"
+type_map_path = "/Volumes/Expansion/biopsy_results/conic/40x/co_registration/Func116_ST_HE_40x_BF_01/Func116_tpmap_registered.png"
+out_dir = "/Volumes/Expansion/biopsy_results/conic/40x/co_registration/Func116_ST_HE_40x_BF_01/binary_maps/"
 
 os.makedirs(out_dir, exist_ok=True)
 
@@ -15,13 +15,16 @@ image = cv2.imread(type_map_path) #BGR format
 #color order nuclei: backgroun (black), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (red)
 
 #BGR, as opencv uses bgr
-colors = {0: (0, 0, 0), 1: (255, 200, 0), 2: (0, 255, 0), 3: (0, 255, 255), 4: (127, 127, 127), 5: (0, 0, 255)}
+colors_pannuke = {0: (0, 0, 0), 1: (255, 200, 0), 2: (0, 255, 0), 3: (0, 255, 255), 4: (127, 127, 127), 5: (0, 0, 255)}
+
+colors_conic = {0: (0, 0, 0), 1: (0, 0, 0), 2: (0, 0, 255), 3: (255, 0, 255), 4: (255, 0, 0), 5: (0, 255, 0), 6: (0, 255, 255)}
+
 
 masks = {}
 
 tolerance = 10 #if pixel is within 10 in RGB
 
-for type, bgr in colors.items():
+for type, bgr in colors_conic.items():
     color_arr = np.array(bgr)
 
     #Difference 

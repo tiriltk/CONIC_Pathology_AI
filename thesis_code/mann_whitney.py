@@ -81,7 +81,6 @@ plt.legend(title='Model')
 plt.tight_layout()
 plt.show()
 
-
 #Histograms
 for type in cell_types:
     plt.figure(figsize=(6,4))
