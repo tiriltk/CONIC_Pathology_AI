@@ -24,7 +24,7 @@ from PIL import Image
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, output_dir, output_dir_dataframe, output_dir_dataframe_p, output_dir_tp, patch_mask_binary, checkpoint0, checkpoint1, epoch_idx=79, dataset="pannuke", nuclei_marker="border_only"):
+def eval_models(imgs_load_array, image_names, tp_num, exp_name0, encoder_name0, exp_name1, encoder_name1, output_dir, output_dir_dataframe, output_dir_dataframe_p, output_dir_tp, patch_mask_binary, checkpoint0, checkpoint1, epoch_idx=49, dataset="conic", nuclei_marker="fill"):
     valid_indices = range(len(imgs_load_array))
     #valid_indices = range(len(imgs_load_array-1 ))
     
@@ -124,7 +124,7 @@ def read_images(tile_path: str, start:int, end:int):
     """
     image_list = glob.glob(tile_path + '*.png')     # Finds all images with .png extension
     image_list = [p for p in image_list if not os.path.basename(p).startswith('._')] 
-    image_list = natsorted(image_list)              # Sorts the images naturally
+    image_list = natsorted(image_list)              # Sorts the images 
 
     #Take a section of the patches
     original_len = len(image_list)
@@ -160,7 +160,7 @@ def read_mask(tile_path: str, start:int, end:int):
     mask_list = natsorted(mask_list)
 
     #image_list = glob.glob(tile_path + '*.png')     # Finds all images with .png extension
-    #image_list = natsorted(image_list)              # Sorts the images naturally
+    #image_list = natsorted(image_list)              # Sorts the images 
 
     #Take a section of the mask
     if end == -1 or end > len(mask_list):
@@ -189,12 +189,12 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, default="hovernet")
     parser.add_argument("--log_name", type=str, default="ensemble_all_fold_0_pannuke")
     
-    parser.add_argument('--exp_name0', type=str, default='hover_paper_pannuke_seresnext50')
-    #parser.add_argument('--exp_name0', type=str, default='hover_paper_conic_seresnext50_00')
+    #parser.add_argument('--exp_name0', type=str, default='hover_paper_pannuke_seresnext50')
+    parser.add_argument('--exp_name0', type=str, default='hover_paper_conic_seresnext50_00')
     parser.add_argument("--encoder_name0", type=str, default="seresnext50")
     
-    parser.add_argument('--exp_name1', type=str, default='hover_paper_pannuke_seresnext101')
-    #parser.add_argument('--exp_name1', type=str, default='hover_paper_conic_seresnext101_00')
+    #parser.add_argument('--exp_name1', type=str, default='hover_paper_pannuke_seresnext101')
+    parser.add_argument('--exp_name1', type=str, default='hover_paper_conic_seresnext101_00')
     parser.add_argument("--encoder_name1", type=str, default="seresnext101")
     
     parser.add_argument("--nuclei_marker", choices = ["border", "fill", "border_only"], default="border_only", help ="Choose how you want nuclei to be marked in overlay. Choose either 'border' or 'fill' (default: %(default)s)" )
@@ -236,7 +236,7 @@ if __name__ == "__main__":
         print(f"Dataset used: {dataset}")
 
     # Choose epoch you want to retrieve weights from
-    epoch_idx = 79
+    epoch_idx = 49 #Here sat to conic
     
     tile_path = args.tile_path
     # Extract array of images and image names

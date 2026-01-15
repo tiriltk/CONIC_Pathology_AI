@@ -90,7 +90,7 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
             indexes = np.where(instance_mask == instance)
 
             binary_map[indexes] = 255
-             # Count the number of pixels that are 255
+            #Count the number of pixels that are 255
             count_255_pixels = np.sum(binary_map == 255)
 
             kernal = np.ones((5, 5), np.uint8)
@@ -106,22 +106,23 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
                 img_overlay[inst_pixels_dilated] = label_colors[(instance_tp[0]-1)] # (instance_tp[0]-1) corrects for no label nuclei being removed from overlay
                 img_overlay[indexes] = img[indexes]
 
-    elif nuclei_marker == "border_only":
+    elif nuclei_marker == "border_only": #only border 
         instance_list = np.unique(instance_mask)[1:]
-        img_overlay = np.zeros_like(img)
+        img_overlay = np.zeros_like(img) #overlay is black 
         for instance in instance_list:
             binary_map = np.zeros_like(instance_mask, dtype=np.uint8)
 
             indexes = np.where(instance_mask == instance)
 
-            binary_map[indexes] = 255
-
+            binary_map[indexes] = 255 
+            #Count the number of pixels that are 255
             count_255_pixels = np.sum(binary_map == 255)
 
             kernal = np.ones((5, 5), np.uint8)
-            dilation = cv2.dilate(binary_map, kernal, iterations=1)
+            dilation = cv2.dilate(binary_map, kernal, iterations=1) #dilation expands boundary
 
-            border_map = (dilation == 255) & (binary_map == 0)
+            #borders have value 255 (white) and background 0 (black)
+            border_map = (dilation == 255) & (binary_map == 0)  #border pixels: background pixel with dilation
             border_idx = np.where(border_map)
             #inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
             instance_tp = np.unique(instance_type[indexes])
@@ -134,7 +135,7 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
 
                 #Only border
                 img_overlay[border_idx] = label_colors[(instance_tp[0]-1)]
-                # img_overlay[indexes] = img[indexes]
+                #img_overlay[indexes] = img[indexes]
 
     #for chosen dataset
     if dataset == "pannuke":
@@ -232,10 +233,10 @@ def visualize_no_gt(imgs, imgs_names, pred, output_dir, dataset, nuclei_marker):
         # colors = [[0  ,   0,   255], [0,   0,   0], [255  ,   255, 0], 
         #         [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
         # # color order nuclei: nolable (red), neutrophil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
-        colors = [[0,   0,   0], [255  ,   255, 0], 
-                [255 ,   0, 0], [255, 0,   255], [0, 255,   0], [0, 255, 255]]
-        # color order nuclei: neutrophil (black), epithelial (cyan), lymphocyte (dark blue), plasma (magenta), eosinophil (green), connective (yellow)
-
+        colors = [[0,   0,   0], [0, 0,   255], 
+                [255, 0,   255], [255 ,   0, 0], [0, 255,   0], [0, 255, 255]]
+        # color order nuclei: neutrophil (black), epithelial (red), lymphocyte (magenta), plasma (dark blue), eosinophil (green), connective (yellow)
+       
     elif dataset=="pannuke":
         print(f"Dataset in visualize: {dataset}")
         # BGR values used in color
