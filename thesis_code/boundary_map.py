@@ -1,4 +1,4 @@
-#Get boundary map from overlay PNG images
+#Get boundary map from the overlayed PNG images from HoVer-Net results
 
 #Note:
 #The boundary colors in the overlay are blended with the HE image

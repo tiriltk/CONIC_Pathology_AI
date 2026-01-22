@@ -5,6 +5,7 @@ import cv2
 
 import numpy as np
 
+#This script is modified from the utils generate_data_pannuke_split.py
 #This script needs further development, as data folds cannot be combined without additional conversions
 #To combine two folds, more preprocessing is required to make them compatible with the training pipeline
 
