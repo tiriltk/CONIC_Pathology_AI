@@ -16,7 +16,7 @@ def split_image(image_path, output_dir):
     half_width = width // 2
     half_height = height // 2
 
-    #Coordinates for each part (left, top, right, bottom)
+    #Coordinates for each part 
     topleft = (0, 0, half_width, half_height) #top left
     topright = (half_width, 0, width, half_height) #top right 
     bottomleft = (0, half_height, half_width, height) #bottom left

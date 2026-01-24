@@ -3,7 +3,7 @@ import os
 from PIL import Image
 
 """
-This tp_results_colored scipt:
+This scipt:
 Takes the tp_results.npy file saved during inference and makes it into PNGs, with colored classes for the cell types. 
 These PNGs are further used in other script to make WSI. 
 """

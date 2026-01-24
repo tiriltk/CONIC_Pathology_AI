@@ -1,9 +1,8 @@
-#Binary maps
 import os
 import cv2
 import numpy as np
 
-#Co-registered type map with borders overlayed
+#Co-registered filled type map with black borders overlayed
 type_map_path = "/Volumes/Expansion/biopsy_results/conic/40x/co_registration/Func116_ST_HE_40x_BF_01/Func116_tpmap_registered.png"
 out_dir = "/Volumes/Expansion/biopsy_results/conic/40x/co_registration/Func116_ST_HE_40x_BF_01/binary_maps/"
 
@@ -16,9 +15,7 @@ image = cv2.imread(type_map_path) #BGR format
 
 #BGR, as opencv uses bgr
 colors_pannuke = {0: (0, 0, 0), 1: (255, 200, 0), 2: (0, 255, 0), 3: (0, 255, 255), 4: (127, 127, 127), 5: (0, 0, 255)}
-
 colors_conic = {0: (0, 0, 0), 1: (0, 0, 0), 2: (0, 0, 255), 3: (255, 0, 255), 4: (255, 0, 0), 5: (0, 255, 0), 6: (0, 255, 255)}
-
 
 masks = {}
 
@@ -36,7 +33,7 @@ for type, bgr in colors_conic.items():
     masks[type] = mask.astype(np.uint8)
 
     #Without colors (binary)
-    #White means cells in a class, black is background
+    #White is cells in a class, black is background
     binary_img = (mask.astype(np.uint8)) * 255
     binary_path = os.path.join(out_dir, f"type_class_{type}_tol{tolerance}_binary.png")
     cv2.imwrite(binary_path, binary_img)

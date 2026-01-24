@@ -3,7 +3,7 @@ import pandas as pd
 from scipy.stats import pearsonr
 import seaborn as sns
 
-#File path to excel 
+#File path to excel spatial data from supervisor
 #file_path = "/Volumes/Expansion/supervisors/Fra Vilde 09.12/SpatialdataModels.xlsx"
 file_path = "/Users/tirilkt/Documents/studie/masteroppgave/spatial-data/conic/Figures/Func116SpotQuantification1.xlsx"
 
@@ -32,7 +32,7 @@ immune_data = df['SpaCET Immune_cells']
 
 
 def pearson(x_name, y_name):
-    pair = df[[x_name, y_name]].dropna()   #Remove NaN 
+    pair = df[[x_name, y_name]].dropna()   #Remove NaN values
     corr, p = pearsonr(pair[x_name], pair[y_name])
     print(f"Pearson correlation (r) {x_name} vs {y_name}: {corr:.3f}")
     print(f"Pearson p-value ({x_name} vs {y_name}): {p:.3e}")
@@ -62,7 +62,6 @@ pearson("Conic 40x Lymphocyte", "SpaCET Immune_cells") #Pearson correlation Hove
 # plt.grid(True)
 # plt.tight_layout()
 # plt.show()
-
 
 #Conic
 plt.figure(figsize=(8, 8))
