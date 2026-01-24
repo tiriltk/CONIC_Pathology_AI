@@ -1,10 +1,11 @@
-#Visualize counts from csv
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import csv
 
-#path to csv file
+#Visualize counts from csv
+#Only used to compare with Numbers
+#Paths to csv files
+
 #20x
 #best model
 csv_04320_best = '/Volumes/Expansion/biopsy_results/pannuke/20x/datafiles_output_20x_best/Func043_ST_HE_20x_BF_01/counts/nuclei_counts_from_0_to_323.csv'
@@ -17,7 +18,6 @@ csv_04320_second = '/Volumes/Expansion/biopsy_results/pannuke/20x/datafiles_outp
 csv_04420_second = '/Volumes/Expansion/biopsy_results/pannuke/20x/datafiles_output_20x_second/Func044_ST_HE_20x_BF_01/counts/nuclei_counts_from_0_to_323.csv'
 csv_05020_second = '/Volumes/Expansion/biopsy_results/pannuke/20x/datafiles_output_20x_second/Func050_ST_HE_20x_BF_01/counts/nuclei_counts_from_0_to_305.csv'
 csv_11620_second = '/Volumes/Expansion/biopsy_results/pannuke/20x/datafiles_output_20x_second/Func116_ST_HE_20x_BF_01/counts/nuclei_counts_from_0_to_271.csv'
-
 
 #40x
 #best model

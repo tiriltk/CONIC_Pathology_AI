@@ -1,13 +1,13 @@
+import pandas as pd
+
 #Concatenating CSV
 #Combining two csv with same structure
-
-import pandas as pd
 
 #CSV file paths
 csv1 = '/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_from_0_to_599.csv'
 csv2 = '/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_from_600_to_1087.csv'
 
-#Load the CSV files into DataFrames
+#Load CSV files into DataFrames
 df1 = pd.read_csv(csv1)
 df2 = pd.read_csv(csv2)
 
