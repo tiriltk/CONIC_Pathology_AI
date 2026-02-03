@@ -132,9 +132,7 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
                 continue
             else:
                 pixel_per_type[str(instance_tp[0])] += count_255_pixels
-
-                #Only border
-                img_overlay[border_idx] = label_colors[(instance_tp[0]-1)]
+                img_overlay[border_idx] = label_colors[(instance_tp[0]-1)] #Only border
                 #img_overlay[indexes] = img[indexes]
 
     #for chosen dataset
