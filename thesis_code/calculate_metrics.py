@@ -3,7 +3,7 @@ import numpy as np
 def summarize(values, name="Metric"):
     arr = np.array(values, dtype=float)
     mean = arr.mean()
-    std = arr.std(ddof=1)
+    std = arr.std()
     print(f"{name}: Mean {mean:.4f} Std {std:.4f}")
     return mean, std
 
