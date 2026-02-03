@@ -1,8 +1,11 @@
-#Mann-Whitney Test
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
+
+#Mann Whitney Test and Box Plots when comparing Pannuke model 1 vs. 2
+#Using cell counts from hovernet
+#Same classes and same lengths (40x vs. 40x or 20x vs. 20x)
 
 #Path to csv file
 #20x
@@ -34,7 +37,7 @@ csv_11640_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_outp
 #Pannuke cell types
 cell_types = ['neoplastic', 'inflammatory', 'connective', 'dead', 'epithelial']
 
-#Model_unfiltered contains patches with zero counts because there are no cells in some areas
+#Unfiltered contains patches with zero counts because there are no cells in some areas (outisde the biopsy)
 model1_unfiltered =  pd.read_csv(csv_11640_best) 
 model2_unfiltered = pd.read_csv(csv_11640_second)
 
@@ -48,48 +51,43 @@ mask = condition1 | condition2
 model1 = model1_unfiltered[mask]
 model2 = model2_unfiltered[mask]
 
-print(model1)
-print(model2)
+#print(model1)
+#print(model2)
 
 assert len(model1_unfiltered) == len(model2_unfiltered), "Mismatch in patch count"
 assert len(model1) == len(model2), "Mismatch after masking"
 
-
-#Mann-Whitney U Test
-#Print
-p_values = {}
+#Mann Whitney U Test
 print("Mann–Whitney U test results:")
-for t in cell_types:
-    stat, p = mannwhitneyu(model1[t], model2[t], alternative='two-sided')
-    p_values[t] = p
-    print(f"{t}: U Statistics = {stat:.2f}, P Value = {p:.4f}")
+for i in cell_types:
+    stat, p = mannwhitneyu(model1[i], model2[i], alternative='two-sided')
+    print(f"{i}: U Statistics = {stat:.2f}, P Value = {p:.4f}")
 
 #Plotting to visualize
 df_visualize = pd.DataFrame({
     'Value': pd.concat([model1[cell_types].melt()['value'], model2[cell_types].melt()['value']]),
-    'Cell type': list(model1[cell_types].melt()['variable'])*2,
-    'Model': ['Model 1']*len(model1[cell_types].melt()) + ['Model 2']*len(model2[cell_types].melt())})
+    'Cell type': list(model1[cell_types].melt()['variable']) * 2,
+    'Model': ['Model 1'] * len(model1[cell_types].melt()) + ['Model 2'] * len(model2[cell_types].melt())})
 
 #Boxplot
-plt.figure(figsize=(10,6))
-sns.boxplot(x='Cell type', y='Value', hue='Model', data=df_visualize, palette=['royalblue', 'hotpink'])
+plt.figure(figsize = (10,6))
+sns.boxplot(x = 'Cell type', y = 'Value', hue = 'Model', data = df_visualize, palette = ['royalblue', 'hotpink'])
 plt.title('Comparison of cell counts between Model 1 and 2')
 plt.ylabel('Cell counts per patch')
 plt.xlabel("Cell type")
-plt.grid(axis='y', linestyle='--', alpha=0.5)
-plt.legend(title='Model')
+plt.grid(axis = 'y', linestyle = '--', alpha=0.5)
+plt.legend(title = 'Model')
 plt.tight_layout()
 plt.show()
 
 #Histograms
 for type in cell_types:
-    plt.figure(figsize=(6,4))
-    plt.hist(model1[type], bins=20, alpha=0.6, label='Model 1', color='royalblue')
-    plt.hist(model2[type], bins=20, alpha=0.6, label='Model 2', color='hotpink')
+    plt.figure(figsize = (6,4))
+    plt.hist(model1[type], bins = 20, alpha = 0.6, label = 'Model 1', color = 'royalblue')
+    plt.hist(model2[type], bins = 20, alpha = 0.6, label = 'Model 2', color = 'hotpink')
     plt.title(f"Histogram of {type} counts")
     plt.xlabel("Counts")
     plt.ylabel("Patches")
     plt.legend()
     plt.tight_layout()
     plt.show()
-
