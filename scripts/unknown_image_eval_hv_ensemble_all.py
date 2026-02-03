@@ -236,7 +236,7 @@ if __name__ == "__main__":
         print(f"Dataset used: {dataset}")
 
     # Choose epoch you want to retrieve weights from
-    epoch_idx = 49 #Here sat to conic
+    epoch_idx = 49 #Here sat to conic now
     
     tile_path = args.tile_path
     # Extract array of images and image names
