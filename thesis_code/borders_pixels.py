@@ -25,7 +25,7 @@ def convert_pixels(border_map_path, output_path):
     gray_image = cv2.cvtColor(border_img, cv2.COLOR_BGR2GRAY)
 
     #Everything not (or almost not) black is border
-    border_mask = gray_image > 10  #threshold, tried different values
+    border_mask = gray_image > 10  #threshold value, tried different values
 
     #White background
     result_image = np.ones_like(border_img) * white_color

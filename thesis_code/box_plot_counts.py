@@ -37,7 +37,7 @@ csv_11640_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_outp
 #Pannuke cell types
 cell_types = ['neoplastic', 'inflammatory', 'connective', 'dead', 'epithelial']
 
-#Unfiltered contains patches with zero counts because there are no cells in some areas (outisde the biopsy)
+#Unfiltered contains patches with zero counts because there are no cells in some areas (outside the biopsy)
 model1_unfiltered =  pd.read_csv(csv_11640_best) 
 model2_unfiltered = pd.read_csv(csv_11640_second)
 
@@ -45,7 +45,7 @@ model2_unfiltered = pd.read_csv(csv_11640_second)
 #Conditions
 condition1 = (model1_unfiltered[cell_types].sum(axis=1) > 0) #calculates sum for each row
 condition2 = (model2_unfiltered[cell_types].sum(axis=1) > 0)
-mask = condition1 | condition2
+mask = condition1 | condition2 #boolean mask (OR), either condition 1 or 2 is true (or both)
 
 #Masks on both unfiltered models
 model1 = model1_unfiltered[mask]
