@@ -32,14 +32,14 @@ def colored_png(tp_results_path: str, output_dir: str, offset: int):
 
     for i in range(num_patches):
         single_patch = mask[i] #single patches, patch.shape = (2048, 2048)
-        patch = single_patch.astype(np.uint8) #PIL
+        patch = single_patch.astype(np.uint8) #PIL requirement
         height = patch.shape[0]
         weight = patch.shape[1]
         color_patch = np.zeros((height, weight, 3), dtype=np.uint8) #black empty canvas, color_patch.shape = (2048, 2048, 3)
         for label, color in colors_conic.items(): #change to correct dataset color!
             class_mask = (patch == label)
             color_patch[class_mask] = color
-        img = Image.fromarray(color_patch)
+        img = Image.fromarray(color_patch) #converts array into PIL image 
         img.save(os.path.join(output_dir, f"tp_patch_{i+offset}.png")) 
         #offset is necessary to name the patches differently because the tp results were saved in two inference rounds
 
