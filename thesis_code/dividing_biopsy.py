@@ -47,7 +47,7 @@ split_image(args.input_image, args.output_dir)
 
 
 """
-python /Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/whole_image_complete_scaled.png \
+python /Users/tirilkt/Documents/studie/masteroppgave/CONIC_Pathology_AI/thesis_code/dividing_biopsy.py \
+/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/whole_image_complete_scaled.png \
 --output /Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/
 """
-

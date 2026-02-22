@@ -12,7 +12,6 @@ These PNGs are further used in other script to make WSI.
 #print(f"Shape: {tp_results_data.shape}") #Shape: (625, 2048, 2048, 1)
 #print(tp_results_data.min(), tp_results_data.max()) #0.0 5.0
 
-
 def colored_png(tp_results_path: str, output_dir: str, offset: int):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -46,9 +45,6 @@ def colored_png(tp_results_path: str, output_dir: str, offset: int):
     print(f"Saved to {output_dir}")
 
 if __name__ == "__main__":
-    # colored_png("/Volumes/Expansion/biopsy_results/conic/20x/output_fill/Func116_ST_HE_20x_BF_01/tp_results/tp_results_from_0_to_271.npy",
-    #              "/Volumes/Expansion/biopsy_results/conic/20x/output_fill/Func116_ST_HE_20x_BF_01/tp_results/tp_results_colors_part1",
-    #             offset = 0)
     
     # colored_png(
     #     "/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/tp_results/tp_results_from_0_to_599.npy",
@@ -61,15 +57,3 @@ if __name__ == "__main__":
          "/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/tp_results/tp_results_colors_part2",
          offset = 600
     )
-
-    # colored_png(
-    #     "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/tp_results/tp_results_from_0_to_599.npy",
-    #     "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/tp_results_colors_part1",
-    #     offset = 0
-    # )
-
-    # colored_png(
-    #     "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/tp_results/tp_results_from_600_to_1087.npy",
-    #     "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_border/Func116_ST_HE_40x_BF_01/tp_results_colors_part2",
-    #     offset = 600
-    # )

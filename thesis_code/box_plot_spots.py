@@ -24,21 +24,21 @@ print(f"PanNuke connective vs CoNIC connective: U Statistics = {stat_con:.2f}, P
 print(f"PanNuke neoplastic vs CoNIC epithelial: U Statistics = {stat_mal:.2f}, P Value = {p_mal:.4f}") 
 
 #Plotting to visualize
-df_visualize = pd.concat([ 
-    pd.DataFrame({'Value': conic_epi, 'Model': 'CoNIC', 'Cell type': 'Epithelial/Neoplastic'}),
-    pd.DataFrame({'Value': pannuke_neo, 'Model': 'PanNuke', 'Cell type': 'Epithelial/Neoplastic'}),
-    pd.DataFrame({'Value': conic_con, 'Model': 'CoNIC', 'Cell type': 'Connective'}), 
+df_visualize = pd.concat([
+    pd.DataFrame({'Value': pannuke_neo, 'Model': 'PanNuke', 'Cell type': 'Malignant'}),
+    pd.DataFrame({'Value': conic_epi, 'Model': 'CoNIC', 'Cell type': 'Malignant'}),
     pd.DataFrame({'Value': pannuke_con, 'Model': 'PanNuke', 'Cell type': 'Connective'}),
+    pd.DataFrame({'Value': conic_con, 'Model': 'CoNIC', 'Cell type': 'Connective'})
 ])
 
 #Boxplot
 plt.figure(figsize=(10,6))
-sns.boxplot(data = df_visualize, x = 'Model', y = 'Value', hue = 'Cell type', order = ['CoNIC', 'PanNuke'], palette=['royalblue', 'hotpink'])
-plt.title('Comparison of cell fraction distributions between CoNIC and PanNuke')
+sns.boxplot(data = df_visualize, x = 'Cell type', y = 'Value', hue = 'Model', palette=['hotpink', 'darkorange'])
+plt.title('Comparison of cell estimates between CoNIC and PanNuke models')
 plt.ylabel('Cell fraction per spot')
 plt.xlabel('')
 plt.grid(axis = 'y', linestyle = '--', alpha = 0.5)
-plt.legend(title='Cell type')
+plt.legend(title='Model')
 #plt.tight_layout()
 plt.show()
 
