@@ -1,11 +1,11 @@
 import numpy as np
 
+#Calculates and prints mean and standard deviation of performance metrics
+
 def summarize(values, name="Metric"):
-    arr = np.array(values, dtype=float)
-    mean = arr.mean()
-    std = arr.std()
+    mean = np.mean(values)
+    std = np.std(values)
     print(f"{name}: Mean {mean:.4f} Std {std:.4f}")
-    return mean, std
 
 mpq_values0 = [
     0.6524437692075566, 0.6527951872135158, 0.6570381002140868,
