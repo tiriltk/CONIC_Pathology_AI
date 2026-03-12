@@ -1,6 +1,8 @@
 import numpy as np
 
-#Calculates and prints mean and standard deviation of performance metrics
+"""
+Calculates and prints mean and standard deviation of performance metrics
+"""
 
 def summarize(values, name="Metric"):
     mean = np.mean(values)

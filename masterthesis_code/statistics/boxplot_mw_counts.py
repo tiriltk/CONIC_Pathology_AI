@@ -3,9 +3,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
 
-#Box Plots and Mann Whitney Test when comparing Pannuke Model 1 and Model 2
-#Using cell counts from hovernet results
-#Same classes and same lengths (20x and 20x or 40x and 40x)
+"""
+Box Plots and Mann Whitney Test when comparing Pannuke Model 1 and Model 2
+Using cell counts from hovernet results
+Same classes and same lengths (20x and 20x or 40x and 40x)
+"""
 
 #Path to csv file that contains the counts for each patch
 #Best model performance metrics (Model 1) 20x
