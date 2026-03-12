@@ -1,8 +1,8 @@
 import pandas as pd
 
-#Concatenating CSV
-#Combining two csv with same structure
-
+"""
+Combining two csv with same structure
+"""
 #CSV file paths
 csv1 = '/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_from_0_to_599.csv'
 csv2 = '/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_from_600_to_1087.csv'
@@ -11,11 +11,8 @@ csv2 = '/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40
 df1 = pd.read_csv(csv1)
 df2 = pd.read_csv(csv2)
 
-#Concentate the DataFrames
-combined_df = pd.concat([df1, df2], ignore_index=True)
+combined_df = pd.concat([df1, df2], ignore_index=True) #Concentate the DataFrames
 
 #Save combined DataFrame to new csv file
-#change path here to the correct biopsy folder!
+#change path to the correct folder!
 combined_df.to_csv('/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_combined.csv', index=False)
-
-print("combined csv")
