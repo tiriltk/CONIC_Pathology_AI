@@ -3,11 +3,10 @@ import os
 import argparse
 
 """
-Divides the WSI into four parts using PIL crop.
+Divides the WSI into four parts to save memory.
 """
 
-def split_wsi(wsi_path, output_dir):
-
+def dividing_wsi(wsi_path, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -18,7 +17,7 @@ def split_wsi(wsi_path, output_dir):
     half_width = width // 2 
     half_height = height // 2
 
-    # #Coordinates for each part and crop
+    # #Coordinates for each part and PIL crop
     # #top left
     # topleft = (0, 0, half_width, half_height)
     # topleft_wsi = wsi.crop(topleft)
@@ -45,18 +44,14 @@ def split_wsi(wsi_path, output_dir):
 
 #Practicing parser arguments
 if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description="Split WSIs into four parts to save memory")
+    parser = argparse.ArgumentParser(description="Divide WSIs into four parts")
     parser.add_argument("input_path", type=str, help='Path to the input WSI file')
-    parser.add_argument("--output", dest="output_dir", type=str, help="Output directory for the four divided parts of the WSI")
-
+    parser.add_argument("--output", dest="output_dir", type=str, help="Output directory for the four divided parts")
     args = parser.parse_args()
-
-    split_wsi(args.input_path, args.output_dir)
-
+    dividing_wsi(args.input_path, args.output_dir)
 
 """
 python /Users/tirilkt/Documents/studie/masteroppgave/CONIC_Pathology_AI/masterthesis_code/post_processing/dividing_wsi.py \
 /Volumes/Expansion/biopsy_results/conic/20x/output_fill/Func116_ST_HE_20x_BF_01/wsi_fill/whole_image_scaled.png \
---output /Volumes/Expansion/biopsy_results/conic/20x/output_fill/Func116_ST_HE_20x_BF_01/wsi_fill_topright/
+--output /Volumes/Expansion/biopsy_results/conic/20x/output_fill/Func116_ST_HE_20x_BF_01/wsi_fill_testing/
 """
