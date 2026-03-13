@@ -4,23 +4,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """
-This script:
-Have co-registered the biopsy, and now wants to use the same transformation on the type map.
+Apply co-registration.
+Have co-registered the biopsy and now wants to use the same transformation on the type map.
 """
 
+#File paths
 path_visium = "/Volumes/Expansion/Co-registration/Func116HEVisium.tif" #Visium
 #path_type_map = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/Func116_tpmap_scaled.png" #Type map
 path_type_map = "/Volumes/Expansion/biopsy_results/conic/20x/output_fill/Func116_ST_HE_20x_BF_01/wsi_border_type_map/bordered_type_map.png"
 path_matrix = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/co_reg_biopsy/Func116_affine_transform.npy" #Affine matrix
 dir_save = "/Volumes/Expansion/biopsy_results/conic/20x/co_registration/Func116_ST_HE_40x_BF_01/" #Saving directory
-
 os.makedirs(dir_save, exist_ok=True)
 
 #Functions from image_co_registation.py:
-
 #Compute scale factor
-#Fixed: Visium
-#Moving: HoVer-Net results
+#Fixed: Visium Moving: HoVer-Net results
 def compute_scale_factor(fixed_image, moving_image):  
     height_fixed, width_fixed = fixed_image.shape[:2]
     height_moving, width_moving = moving_image.shape[:2]
@@ -31,27 +29,21 @@ def compute_scale_factor(fixed_image, moving_image):
     return scaleW, scaleH
 
 
-#Rotation and translation
-#Rotating by a chosen angle
+#Manual otation and translation
 def manual_rotation_translation(image, angle, tx, ty):
-    #Get image dimensions
-    height, width = image.shape[:2] #take the two first values from (H, W, C)
+    height, width = image.shape[:2] ##Get image dimensions, the two first values from (H, W, C)
 
     #Rotation
-    #Define rotation parameters
     center = (width // 2, height // 2) #Center coordinates of image for rotation
-
-    rotation_angle = angle #Chosen rotation angle in degrees (positive angle is counter-clockwise)
-    scale = 1.0 #Scaling factor, using 1.0 to keep same size here
+    rotation_angle = angle #Selected rotation angle in degrees where positive angle is counter clockwise
+    scale = 1.0 #Scaling factor
 
     #Get the rotation matrix
     rotation_matrix = cv2.getRotationMatrix2D(center, rotation_angle, scale)
-    #Apply rotation
-    #warpAffine is the function to apply the transformation
+    #Apply rotation with warpAffine function
     rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
 
     #Translation
-    #Translation values
     translate_x = tx
     translate_y = ty
     translation_matrix = np.float32([[1, 0, translate_x],[0, 1, translate_y]])
@@ -114,13 +106,11 @@ plt.subplot(1,3,3)
 plt.imshow(visium_rgb)
 plt.imshow(type_map_registered, alpha=0.5)
 plt.title("Type map registrert")
-
 plt.tight_layout()
 
 overlay_path = os.path.join(dir_save, "Func116_tpmap_registered_overlay.png")
 plt.savefig(overlay_path)
 print("Saved overlay:", overlay_path)
-
 plt.show()
 
 #Result from co-registering 
