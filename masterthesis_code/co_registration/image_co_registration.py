@@ -73,7 +73,7 @@ def fine_co_reg(fixed_rgb, moving_rgb):
  
     height, width = fixed_rgb.shape[:2]
     registered_image = cv2.warpAffine(moving_rgb, matrix_resized, (width, height)) #Using matrix to transform moving image to fixed image
-    affine_transform_matrix = np.eye(3, dtype=np.float32) #Affin transform matrix
+    affine_transform_matrix = np.eye(3, dtype=np.float32) #Affin transform matrix 3x3
     affine_transform_matrix[:2, :] = matrix_resized
 
     return registered_image, affine_transform_matrix
