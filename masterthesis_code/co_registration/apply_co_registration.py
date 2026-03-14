@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """
-Apply co-registration.
+Apply co-registration following Matlab and functions from image_co_registration.py.
 Have co-registered the biopsy and now wants to use the same transformation on the type map.
 """
 
