@@ -48,6 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("input_path", type=str, help='Path to the input WSI file')
     parser.add_argument("--output", dest="output_dir", type=str, help="Output directory for the four divided parts")
     args = parser.parse_args()
+    
     dividing_wsi(args.input_path, args.output_dir)
 
 """

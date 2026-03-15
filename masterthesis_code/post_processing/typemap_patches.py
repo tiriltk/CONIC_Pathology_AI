@@ -12,9 +12,8 @@ def typemap_patches(tp_results_path, output_dir, offset):
         os.makedirs(output_dir)
 
     #PanNuke color order nuclei: background (black), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (red)
-    #CoNIC color order nuclei: background (black), neutrophil (black), epithelial (red), lymphocyte (magenta), plasma (dark blue), eosinophil (green), connective (yellow)
-
     pannuke_colors = {0: (0, 0, 0), 1: (0, 200, 255), 2: (0, 255, 0), 3: (255, 255, 0), 4: (127, 127, 127), 5: (255, 0, 0)}
+    #CoNIC color order nuclei: background (black), neutrophil (black), epithelial (red), lymphocyte (magenta), plasma (dark blue), eosinophil (green), connective (yellow)
     conic_colors = {0: (0, 0, 0), 1: (0, 0, 0), 2: (255, 0, 0), 3: (255, 0, 255), 4: (0, 0, 255), 5: (0, 255, 0), 6: (255, 255, 0)}
     
     tp_result = np.load(tp_results_path)
@@ -32,6 +31,7 @@ def typemap_patches(tp_results_path, output_dir, offset):
 
         img = Image.fromarray(color_patch) #Convert array into PIL image 
         img.save(os.path.join(output_dir, f"typepatch_{i+offset}.png")) #Save 
+        
     print(f"Saved: {output_dir}")
 
 if __name__ == "__main__":
