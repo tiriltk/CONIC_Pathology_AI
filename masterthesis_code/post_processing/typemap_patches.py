@@ -23,15 +23,14 @@ def typemap_patches(tp_results_path, output_dir, offset):
     for i in range(num_patches):
         patch = data[i].astype(np.uint8) #patch.shape = (2048, 2048)
         height, width = patch.shape
-        color_patch = np.zeros((height, width, 3), dtype=np.uint8) #black background, color_patch.shape = (2048, 2048, 3)
-
+        color_patch = np.zeros((height, width, 3), dtype=np.uint8) #black background
+        
         for cell_class, color in conic_colors.items(): #Remember to change to correct dataset!
             class_mask = (patch == cell_class) #Binary mask
             color_patch[class_mask] = color #Apply color
 
         img = Image.fromarray(color_patch) #Convert array into PIL image 
         img.save(os.path.join(output_dir, f"typepatch_{i+offset}.png")) #Save 
-        
     print(f"Saved: {output_dir}")
 
 if __name__ == "__main__":

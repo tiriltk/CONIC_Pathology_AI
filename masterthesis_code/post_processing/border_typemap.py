@@ -22,6 +22,5 @@ type_borders = type_map.copy()
 type_borders[border_mask] = black_color #Apply border mask on filled type map and set border pixels to black
 
 output_path = os.path.join(output_dir, "bordered_typemap.png")
-
 cv2.imwrite(output_path, type_borders)
 print(f"Saved: {output_path}")

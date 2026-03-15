@@ -8,6 +8,7 @@ Mann Whitney and Box plots comparing the Best Pannuke and Conic model selected
 Using spot estimates from excel file
 """
 
+#File paths
 file_path = "/Users/tirilkt/Documents/studie/masteroppgave/spatial-data/conic/Figures/Func116SpotQuantification1.xlsx" #Pannuke vs conic
 df = pd.read_excel(file_path)
 
@@ -25,7 +26,7 @@ stat_mal, p_mal = mannwhitneyu(pannuke_neo, conic_epi, alternative='two-sided')
 print(f"PanNuke connective and CoNIC connective: U Statistics = {stat_con:.2f}, P Value = {p_con:.4f}") 
 print(f"PanNuke neoplastic and CoNIC epithelial: U Statistics = {stat_mal:.2f}, P Value = {p_mal:.4f}") 
 
-#Plotting to visualize
+#Plotting 
 df_visualize = pd.concat([
     pd.DataFrame({'Value': pannuke_neo, 'Model': 'PanNuke', 'Cell type': 'Malignant'}),
     pd.DataFrame({'Value': conic_epi, 'Model': 'CoNIC', 'Cell type': 'Malignant'}),

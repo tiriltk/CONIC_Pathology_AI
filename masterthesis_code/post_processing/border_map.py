@@ -21,11 +21,10 @@ def border_map(borderonly_path, output_path):
     threshold = 10 #Tried different values
     border_mask = gray_image > threshold #Border pixels above a threshold
 
-    result_image = np.ones_like(border_image) * white_color  #White background
+    result_image = np.ones_like(border_image) * white_color #White background
     result_image[border_mask] = black_color #Black border pixels
-
     cv2.imwrite(output_path, result_image) #Save
     print(f"Saved: {output_path}")
 
-output_path = os.path.join(output_dir, "black_bordermap_test.png")
+output_path = os.path.join(output_dir, "black_bordermap.png")
 border_map(borderonly_path, output_path)

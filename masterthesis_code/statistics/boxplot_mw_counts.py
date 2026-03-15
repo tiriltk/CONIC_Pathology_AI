@@ -44,8 +44,8 @@ model2_unfiltered = pd.read_csv(csv_11620_second)
 plot_data = []
 
 for cell_type in pannuke_types:
+    #Filter out rows where both are 0 
     #Mask to keep patches where at least one of the models finds cells
-    #Filter out rows where both are 0
     mask = (model1_unfiltered[cell_type] > 0) | (model2_unfiltered[cell_type] > 0) #logical OR operator
     model1_filtered = model1_unfiltered[mask]
     model2_filtered = model2_unfiltered[mask]

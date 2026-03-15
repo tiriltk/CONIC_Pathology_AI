@@ -17,11 +17,10 @@ Using excel file with containing spatial transcriptomics data and model estimate
 file_path = "/Volumes/Expansion/supervisors/Fra Vilde 09.12/SpatialdataModels.xlsx" #Pannuke Model 1 and 2
 #file_path = "/Users/tirilkt/Documents/studie/masteroppgave/spatial-data/conic/Figures/Func116SpotQuantification1.xlsx" #Pannuke vs conic
 
-#Read file
-df = pd.read_excel(file_path)
+df = pd.read_excel(file_path) #Read file
 
 def pearson(x_data, y_data):
-    pair = df[[x_data, y_data]].dropna()   #Remove NaN values
+    pair = df[[x_data, y_data]].dropna() #Remove NaN values
     corr, p = pearsonr(pair[x_data], pair[y_data])
     print(f"Pearson correlation (r) {x_data} and {y_data}: {corr:.3f}")
     print(f"Pearson p-value ({x_data} and {y_data}): {p:.3e}")
@@ -61,7 +60,6 @@ def pearson(x_data, y_data):
 #PanNuke Model 1 and Model 2
 pearson("HoverNet model1 Neoplastic", "HoverNet model2 Neoplastic")
 pearson("HoverNet model1 Connective", "HoverNet model2 Connective") 
-
 
 plt.figure(figsize=(8, 8))
 pair = df[["HoverNet model1 Neoplastic", "HoverNet model2 Neoplastic"]].dropna()

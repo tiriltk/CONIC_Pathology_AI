@@ -24,12 +24,12 @@ for cell_type, color in conic_colors.items(): #Remember to change to correct dat
     mask = np.all(difference < threshold, axis=2) #Pixels belong to cell type if diff is below threshold
 
     binary_image = (mask.astype(np.uint8)) * 255  #Binary map
-    binary_path = os.path.join(out_dir, f"type_{cell_type}_binary.png")
+    binary_path = os.path.join(out_dir, f"type{cell_type}binary.png")
     cv2.imwrite(binary_path, binary_image)
-    
+
     color_image = np.zeros_like(typemap) #Color map
     color_image[mask] = color
-    color_path = os.path.join(out_dir, f"type_{cell_type}_colored.png")
+    color_path = os.path.join(out_dir, f"type{cell_type}colored.png")
     cv2.imwrite(color_path, color_image)
 
 #Color range

@@ -3,7 +3,7 @@ import os
 import argparse
 
 """
-Divides the WSI into four parts to save memory.
+Divides the WSI into four parts to save memory when opening the images
 """
 
 def dividing_wsi(wsi_path, output_dir):
