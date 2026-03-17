@@ -108,7 +108,7 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
 
     elif nuclei_marker == "border_only": #only border 
         instance_list = np.unique(instance_mask)[1:]
-        img_overlay = np.zeros_like(img) #black image 
+        img_overlay = np.zeros_like(img) #black image instead
         for instance in instance_list:
             binary_map = np.zeros_like(instance_mask, dtype=np.uint8)
 
