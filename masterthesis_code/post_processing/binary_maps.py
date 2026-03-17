@@ -8,7 +8,7 @@ Take the co-registered filled type map with black borders overlayed and make bia
 
 #File paths
 typemap_path = "/Volumes/Expansion/biopsy_results/conic/20x/co_registration/Func116_ST_HE_40x_BF_01/Func116_tpmap_registered.png"
-out_dir = "/Volumes/Expansion/biopsy_results/conic/20x/co_registration/testing/"
+out_dir = "/Volumes/Expansion/biopsy_results/conic/20x/co_registration/"
 os.makedirs(out_dir, exist_ok=True)
 
 #PanNuke color order nuclei: background (black), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (red)
