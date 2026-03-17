@@ -44,7 +44,6 @@ plt.legend(title='Model')
 plt.tight_layout()
 plt.show()
 
-
 # plt.figure(figsize = (6,4))
 # plt.hist(pannuke_neo, bins = 20, alpha = 0.6, label = 'Model 1', color = 'royalblue')
 # plt.hist(conic_epi, bins = 20, alpha = 0.6, label = 'Model 2', color ='hotpink')
