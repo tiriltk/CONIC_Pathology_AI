@@ -46,7 +46,7 @@ plot_data = []
 for cell_type in pannuke_types:
     #Filter out rows where both are 0 
     #Mask to keep patches where at least one of the models finds cells
-    mask = (model1_unfiltered[cell_type] > 0) | (model2_unfiltered[cell_type] > 0) #logical OR operator
+    mask = (model1_unfiltered[cell_type] > 0) | (model2_unfiltered[cell_type] > 0) #logical OR operator true if either model or both count cells
     model1_filtered = model1_unfiltered[mask]
     model2_filtered = model2_unfiltered[mask]
 
