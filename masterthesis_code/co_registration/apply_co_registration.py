@@ -48,7 +48,7 @@ def apply_registration(visium_image_path, affine_matrix_path, type_map_path):
     type_map_rgb = cv2.cvtColor(type_map, cv2.COLOR_BGR2RGB)
 
     scaleW, scaleH = compute_scale_factor(visium_rgb, type_map_rgb) #Scale
-    type_map_resized = cv2.resize(type_map_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST)
+    type_map_resized = cv2.resize(type_map_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST) #best for binary maps
 
     #Manual rotation and translation Func116 manual parameters = [8, -100, 0]
     manual_angle = 8 #Rotate 8 degrees

@@ -43,7 +43,7 @@ def fine_co_reg(fixed_rgb, moving_rgb):
     moving_image = cv2.cvtColor(moving_rgb, cv2.COLOR_RGB2GRAY)
 
     file_reduction = 0.2 #Same as in Matlab to reduce size
-    fixed_reduced = cv2.resize(fixed_image, None, fx = file_reduction, fy = file_reduction, interpolation=cv2.INTER_CUBIC)
+    fixed_reduced = cv2.resize(fixed_image, None, fx = file_reduction, fy = file_reduction, interpolation=cv2.INTER_CUBIC) #best for images high quality
     moving_reduced = cv2.resize(moving_image, None, fx = file_reduction, fy = file_reduction, interpolation=cv2.INTER_CUBIC)
     fixed = fixed_reduced.astype(np.uint8)
     moving = moving_reduced.astype(np.uint8)
@@ -85,7 +85,7 @@ fixed_rgb = cv2.cvtColor(fixed_image, cv2.COLOR_BGR2RGB) #Converts BGR to RGB
 moving_rgb = cv2.cvtColor(moving_image, cv2.COLOR_BGR2RGB)
 
 scaleW, scaleH = compute_scale_factor(fixed_rgb, moving_rgb) #Scale
-moving_resized = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC)
+moving_resized = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC) #best for images high quality
 overlay_scaled = cv2.addWeighted(fixed_rgb, 0.5, moving_resized, 0.5, 0)
 
 #Plot
