@@ -3,7 +3,8 @@ import cv2
 import numpy as np
 
 """
-Take the co-registered filled type map with black borders overlayed and make bianry maps.
+Take as input the co-registered filled type map with black borders overlayed.
+Makes binary and colored maps for each cell type.
 """
 
 #File paths
@@ -20,8 +21,8 @@ typemap = cv2.imread(typemap_path) #BGR
 
 for cell_type, color in conic_colors.items(): #Remember to change to correct dataset!
     threshold = 10 #Threshold
-    difference = np.abs(typemap - color) #Difference between type map color and assigned color 
-    mask = np.all(difference < threshold, axis=2) #Pixels belong to cell type if diff is below threshold
+    difference = np.abs(typemap - color) #Difference between type map pixels color and assigned color values
+    mask = np.all(difference < threshold, axis=2) #Pixels belong to cell type if difference is below threshold for all color channels
 
     binary_image = (mask.astype(np.uint8)) * 255  #Binary map
     binary_path = os.path.join(out_dir, f"type{cell_type}binary.png")
