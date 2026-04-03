@@ -4,7 +4,7 @@ from PIL import Image
 
 """
 Takes the tp_results.npy file saved during inference and makes the patches into PNG images with colored cell types. 
-The patches are later used in TIA script to make WSI to get type map. 
+The patches are later used in TIA script to make WSI to get the whole type map. 
 """
 
 def typemap_patches(tp_results_path, output_dir, offset):
@@ -17,16 +17,16 @@ def typemap_patches(tp_results_path, output_dir, offset):
     conic_colors = {0: (0, 0, 0), 1: (0, 0, 0), 2: (255, 0, 0), 3: (255, 0, 255), 4: (0, 0, 255), 5: (0, 255, 0), 6: (255, 255, 0)}
     
     tp_result = np.load(tp_results_path)
-    data = np.squeeze(tp_result, axis=-1) #squeeze the last dimention from (625, 2048, 2048, 1) to (625, 2048, 2048)
+    data = np.squeeze(tp_result, axis=-1) #squeeze the last dimention from (625, 2048, 2048, 1) to (625, 2048, 2048) to remove unnesessary dimension
     num_patches = data.shape[0]
     
     for i in range(num_patches):
         patch = data[i].astype(np.uint8) #patch.shape = (2048, 2048)
         height, width = patch.shape
         color_patch = np.zeros((height, width, 3), dtype=np.uint8) #black background
-        
+
         for cell_class, color in conic_colors.items(): #Remember to change to correct dataset!
-            class_mask = (patch == cell_class) #Binary mask
+            class_mask = (patch == cell_class) #Mask for cell class
             color_patch[class_mask] = color #Apply color
 
         img = Image.fromarray(color_patch) #Convert array into PIL image 
@@ -43,9 +43,10 @@ if __name__ == "__main__":
     # typemap_patches(
     #      "/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/tp_results/tp_results_from_600_to_1087.npy",
     #      "/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/tp_results/tp_results_colors_part2",
-    #      offset = 600
-    # )
+    #      offset = 600)
 
-#tp_results_data = np.load("/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func043_ST_HE_40x_BF_01/tp_results/tp_results.npy")
-#print(f"Shape: {tp_results_data.shape}") #Shape: (625, 2048, 2048, 1)
-#print(tp_results_data.min(), tp_results_data.max()) #0.0 5.0
+#data = np.load("/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_second/output_fill/Func116_ST_HE_40x_BF_01/tp_results/tp_results_npy/tp_results_from_0_to_599.npy")
+#print("Shape:", data.shape) #(600, 2048, 2048, 1)
+#print("Min:", data.min()) #0.0
+#print("Max:", data.max()) #5.0
+#print("Unique values:", np.unique(data)) #Unique values: [0. 1. 2. 3. 4. 5.]
