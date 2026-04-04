@@ -1,7 +1,7 @@
 import pandas as pd
 
 """
-Combining two csv with same structure.
+Combining two CSV files with same structure
 """
 #CSV file paths
 csv1 = '/Volumes/Expansion/biopsy_results/conic/40x/output_fill/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_from_0_to_599.csv'
