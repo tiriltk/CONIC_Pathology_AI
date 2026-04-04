@@ -10,6 +10,7 @@ Apply manual rotation and translation by testing different values and visual ins
 Fine adjustments and alignments using OpenCV functions. Plots and saves the results.
 """
 
+#File paths
 fixed_path = "/Volumes/Expansion/Co-registration/Func116HEVisium.tif" #Fixed image path
 moving_path = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/Func116_ST_HE_40x_BF_01/wsi/whole_image_complete_scaled.png" #Moving image path
 save_dir = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/" #Save path

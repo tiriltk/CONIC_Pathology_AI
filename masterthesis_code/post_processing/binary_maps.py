@@ -3,13 +3,12 @@ import cv2
 import numpy as np
 
 """
-Take as input the co-registered filled type map with black borders overlayed.
-Makes binary and colored maps for each cell type.
+Take as input the co-registered type map with borders and akes binary and colored maps for each cell type.
 """
 
 #File paths
 typemap_path = "/Volumes/Expansion/biopsy_results/conic/20x/co_registration/Func116_ST_HE_40x_BF_01/Func116_tpmap_registered.png"
-out_dir = "/Volumes/Expansion/biopsy_results/conic/20x/co_registration/"
+out_dir = "/Volumes/Expansion/biopsy_results/conic/20x/co_registration_eastertest/"
 os.makedirs(out_dir, exist_ok=True)
 
 #PanNuke color order nuclei: background (black), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (red)
@@ -17,10 +16,10 @@ pannuke_colors = {0: (0, 0, 0), 1: (255, 200, 0), 2: (0, 255, 0), 3: (0, 255, 25
 #CoNIC color order nuclei: background (black), neutrophil (black), epithelial (red), lymphocyte (magenta), plasma (dark blue), eosinophil (green), connective (yellow)
 conic_colors = {0: (0, 0, 0), 1: (0, 0, 0), 2: (0, 0, 255), 3: (255, 0, 255), 4: (255, 0, 0), 5: (0, 255, 0), 6: (0, 255, 255)}
 
-typemap = cv2.imread(typemap_path) #BGR 
+typemap = cv2.imread(typemap_path) #Loaded in BGR 
+threshold = 10 #Threshold
 
 for cell_type, color in conic_colors.items(): #Remember to change to correct dataset!
-    threshold = 10 #Threshold
     difference = np.abs(typemap - color) #Difference between type map pixels color and assigned color values
     mask = np.all(difference < threshold, axis=2) #Pixels belong to cell type if difference is below threshold for all color channels
 

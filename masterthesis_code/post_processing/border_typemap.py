@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 """
-Set the black border map on the filled type map to separate the cells
+Use the binary border map on the type map to separate the clustered cells.
 """
 
 #File paths
@@ -19,7 +19,7 @@ border_mask = np.all(border_map == 0, axis=2) #Mask for border (black) pixels
 black_color = np.array([0,0,0])
 
 type_borders = type_map.copy()
-type_borders[border_mask] = black_color #Apply border mask on filled type map and set border pixels to black
+type_borders[border_mask] = black_color #Apply border mask on type map and set border pixels to black for separation
 
 output_path = os.path.join(output_dir, "bordered_typemap.png")
 cv2.imwrite(output_path, type_borders)

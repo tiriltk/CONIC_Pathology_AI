@@ -8,6 +8,7 @@ Apply co-registration following Matlab and functions from image_co_registration.
 Have co-registered the biopsy and now wants to use the same transformation on the type map.
 """
 
+#File paths
 path_visium = "/Volumes/Expansion/Co-registration/Func116HEVisium.tif" #Visium
 path_type_map = "/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_best/output_fill/Func116_ST_HE_40x_BF_01/wsi_tp_results/Func116_tpmap_scaled.png" #Type map
 path_matrix = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/Func116_affine_transform.npy" #Affine matrix
