@@ -4,16 +4,14 @@ import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
 
 """
-Mann Whitney and Box plots comparing the Best Pannuke and Conic model selected
-Using spot estimates from excel file
+Mann Whitney and Box plots comparing the Best Pannuke and Conic model selected using spot estimates from excel file.
 """
 
 #File paths
 file_path = "/Users/tirilkt/Documents/studie/masteroppgave/spatial-data/conic/Figures/Func116SpotQuantification1.xlsx" #Pannuke vs conic
 df = pd.read_excel(file_path)
 
-#Comparing largest classes neoplastic and connective from pannuke and conic
-#Select out these columns 
+#Comparing largest classes neoplastic and connective from pannuke and conic, select out these columns 
 pannuke_neo = df['PanNuke model2 Neoplastic'].dropna() 
 pannuke_con = df['PanNuke model2 Connective'].dropna() 
 

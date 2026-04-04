@@ -4,9 +4,8 @@ from scipy.stats import pearsonr
 import seaborn as sns
 
 """
-Pearson correlation and scatter plots
-Comparing spatial cell estimates from model predictions and spatial transcriptomics
-Using excel file with containing spatial transcriptomics data and model estimates
+Pearson correlation and scatter plots comparing spatial cell estimates from model predictions and spatial transcriptomics.
+Using excel file with containing spatial transcriptomics data and model estimates.
 """
 
 #Paths for comparing two PanNuke models or two CoNIC models

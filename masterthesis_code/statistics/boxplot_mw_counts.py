@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
 
 """
-Box Plots and Mann Whitney Test when comparing Pannuke Model 1 and Model 2
-Using cell counts from hovernet results
-Same classes and same lengths (20x and 20x or 40x and 40x)
+Box Plots and Mann Whitney Test when comparing Pannuke Model 1 and 2.
+Using cell counts from hovernet results. Same classes and same lengths (20x and 20x or 40x and 40x).
 """
 
 #Path to csv file that contains the counts for each patch
@@ -37,21 +36,19 @@ csv_11640_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_outp
 #Pannuke cell types
 pannuke_types = ['neoplastic', 'inflammatory', 'connective', 'dead', 'epithelial']
 
-#Unfiltered contains patches with zero counts because there are no cells in some patches
+#Unfiltered, contains patches with zero counts because there are no cells in some patches and none outside the tissue
 model1_unfiltered =  pd.read_csv(csv_11620_best) 
 model2_unfiltered = pd.read_csv(csv_11620_second)
 
 plot_data = []
 
 for cell_type in pannuke_types:
-    #Filter out rows where both are 0 
     #Mask to keep patches where at least one of the models finds cells
     mask = (model1_unfiltered[cell_type] > 0) | (model2_unfiltered[cell_type] > 0) #logical OR operator true if either model or both count cells
     model1_filtered = model1_unfiltered[mask]
     model2_filtered = model2_unfiltered[mask]
 
-    #Mann Whitney U Test
-    stat, p = mannwhitneyu(model1_filtered[cell_type], model2_filtered[cell_type], alternative='two-sided')
+    stat, p = mannwhitneyu(model1_filtered[cell_type], model2_filtered[cell_type], alternative='two-sided') #Mann Whitney U Test
     print(f"{cell_type}: U Statistics = {stat:.2f}, P Value = {p:.4f}")
 
     plot_data.append(pd.DataFrame({"Value": model1_filtered[cell_type].values, "Cell type": cell_type, "Model": "Model 1"}))
