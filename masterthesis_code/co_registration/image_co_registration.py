@@ -5,8 +5,8 @@ import os
 
 """
 Co-registration following Matlab code and OpenCv examples. Fixed image is Visium and moving image is HoVerNet results. 
-Calculates the scale factor and scales the moving image to the fixed.
-Apply manual rotation and translation by testing different values and visual inspect the results.
+Calculates the scale factor and scales the moving image to the fixed. 
+Apply manual rotation and translation by testing different values.
 Fine adjustments and alignments using OpenCV functions. Plots and saves the results.
 """
 
@@ -42,7 +42,7 @@ def fine_co_reg(fixed_rgb, moving_manual_rgb):
     moving_image = cv2.cvtColor(moving_manual_rgb, cv2.COLOR_RGB2GRAY)
 
     file_reduction = 0.2 #Same as in Matlab to reduce size
-    fixed_reduced = cv2.resize(fixed_image, None, fx = file_reduction, fy = file_reduction, interpolation=cv2.INTER_CUBIC) #using cubic, best for images high quality
+    fixed_reduced = cv2.resize(fixed_image, None, fx = file_reduction, fy = file_reduction, interpolation=cv2.INTER_CUBIC) #cubic for high quality
     moving_reduced = cv2.resize(moving_image, None, fx = file_reduction, fy = file_reduction, interpolation=cv2.INTER_CUBIC)
     fixed = fixed_reduced.astype(np.uint8)
     moving = moving_reduced.astype(np.uint8)
@@ -54,7 +54,7 @@ def fine_co_reg(fixed_rgb, moving_manual_rgb):
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True) #Matcher 
     matches = matcher.match(des1, des2) #Match the desciptors
     matches = sorted(matches, key=lambda x: x.distance) #Sort the matches from distances
-    sorted_matches = matches[:500] #Tried different values for selected matches
+    sorted_matches = matches[:500] #Best matches, tried different values for selected matches
 
     n_matches = len(sorted_matches)
     moving_points = np.zeros((n_matches, 2)) #Define matrixes to save coordinates
@@ -63,7 +63,7 @@ def fine_co_reg(fixed_rgb, moving_manual_rgb):
         moving_points[i] = kp1[m.queryIdx].pt
         fixed_points[i] = kp2[m.trainIdx].pt
 
-    matrix, inliers = cv2.estimateAffine2D(moving_points, fixed_points, cv2.RANSAC) #Tried different, best to use estimateAffine2D
+    matrix, inliers = cv2.estimateAffine2D(moving_points, fixed_points, cv2.RANSAC) #Best results with estimateAffine2D
     matrix_resized = matrix.copy() 
     matrix_resized[0, 2] /=file_reduction #As done in matlab to resize back the translation
     matrix_resized[1, 2] /=file_reduction
@@ -80,13 +80,13 @@ moving_image = cv2.imread(str(moving_path))
 fixed_rgb = cv2.cvtColor(fixed_image, cv2.COLOR_BGR2RGB) #Converts BGR to RGB
 moving_rgb = cv2.cvtColor(moving_image, cv2.COLOR_BGR2RGB)
 
-scaleW, scaleH = compute_scale_factor(fixed_rgb, moving_rgb)
-moving_resized = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC) #scale, this interpolation best for images high quality
-overlay_scaled = cv2.addWeighted(fixed_rgb, 0.5, moving_resized, 0.5, 0)
+scaleW, scaleH = compute_scale_factor(fixed_rgb, moving_rgb) #scale
+moving_resized = cv2.resize(moving_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_CUBIC) #scale, this interpolation best for images of high quality
+overlay_scaled = cv2.addWeighted(fixed_rgb, 0.5, moving_resized, 0.5, 0) #overlay
 
 #Manual rotation and translation Func116 manual parameters: Rotate 8 degrees, move -100 pixels in x, move 0 pixels in y
-manual_aligned_image = manual_rotation_translation(moving_resized, 8, -100, 0)
-overlay_manual = cv2.addWeighted(fixed_rgb, 0.5, manual_aligned_image, 0.5, 0)
+manual_aligned_image = manual_rotation_translation(moving_resized, 8, -100, 0) #manual rotation translation
+overlay_manual = cv2.addWeighted(fixed_rgb, 0.5, manual_aligned_image, 0.5, 0) #overlay
 plt.imshow(overlay_manual)
 plt.title("Manual registration")
 plt.show()
@@ -98,6 +98,7 @@ plt.imshow(overlay_fine)
 plt.title("Fine adjusted registration")
 plt.show()
 
+#Save
 plt.imsave(os.path.join(save_dir, "Func116_overlay_scaled.png"), overlay_scaled) #Save overlays
 plt.imsave(os.path.join(save_dir, "Func116_overlay_manual.png"), overlay_manual)
 plt.imsave(os.path.join(save_dir, "Func116_overlay_fine.png"), overlay_fine)

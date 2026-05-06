@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """
-Apply co-registration following Matlab and functions from image_co_registration.py.
-Have co-registered the biopsy and now wants to use the same transformation on the type map.
+Apply co-registration on type map following Matlab code and using functions from image_co_registration.py script.
+Have co-registered the sample and use the same transformation on the type map.
 """
 
 #File paths
@@ -36,6 +36,7 @@ def manual_rotation_translation(image, angle, tx, ty):
     manual_aligned_image = cv2.warpAffine(rotated_image, translation_matrix, (width, height)) #Apply translation 
     return manual_aligned_image
 
+#Apply the registration
 def apply_registration(visium_image_path, affine_matrix_path, type_map_path):
     visium = cv2.imread(visium_image_path) #Load fixed_image bgr
     visium_rgb = cv2.cvtColor(visium, cv2.COLOR_BGR2RGB)
@@ -58,6 +59,7 @@ def apply_registration(visium_image_path, affine_matrix_path, type_map_path):
 
 visium_rgb, type_map_original, type_map_registered = apply_registration(path_visium, path_matrix, path_type_map)
 
+#Plot and save
 plt.imshow(visium_rgb)
 plt.imshow(type_map_registered, alpha=0.5)
 plt.title("Type map registrert")
