@@ -3,14 +3,15 @@ import os
 from PIL import Image
 
 """
-Takes the tp_results.npy file saved during inference and makes the patches into PNG images with colored cell types. 
-The patches are later used in TIA script to make WSI to get the whole type map. 
+Takes the tp_results.npy file saved during model inference and colors the cell types and saves as image.
+The saved patches are used in TIA script to make WSI to get the whole type map. 
 """
 
 def typemap_patches(tp_results_path, output_dir, offset):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    #Colors used in the model:
     #PanNuke color order nuclei: background (black), neoplastic (light blue), inflammatory (green), connective (yellow), dead (grey?), epithelial (red)
     pannuke_colors = {0: (0, 0, 0), 1: (0, 200, 255), 2: (0, 255, 0), 3: (255, 255, 0), 4: (127, 127, 127), 5: (255, 0, 0)}
     #CoNIC color order nuclei: background (black), neutrophil (black), epithelial (red), lymphocyte (magenta), plasma (dark blue), eosinophil (green), connective (yellow)
@@ -23,15 +24,16 @@ def typemap_patches(tp_results_path, output_dir, offset):
     for i in range(num_patches):
         patch = data[i].astype(np.uint8) #patch.shape = (2048, 2048)
         height, width = patch.shape
-        color_patch = np.zeros((height, width, 3), dtype=np.uint8) #black background
+        color_patch = np.zeros((height, width, 3), dtype=np.uint8) #black patch
 
-        for cell_class, color in conic_colors.items(): #Remember to change to correct dataset!
+        for cell_class, color in conic_colors.items():
             class_mask = (patch == cell_class) #Mask for cell class
-            color_patch[class_mask] = color #Apply color
+            color_patch[class_mask] = color #Apply color for the cell class
 
-        img = Image.fromarray(color_patch) #Convert array into PIL image 
+        img = Image.fromarray(color_patch) #Convert array into image 
         img.save(os.path.join(output_dir, f"typepatch_{i+offset}.png")) #Save 
     print(f"Saved: {output_dir}")
+
 
 if __name__ == "__main__":
     typemap_patches(
@@ -49,4 +51,3 @@ if __name__ == "__main__":
 #print("Shape:", data.shape) #(600, 2048, 2048, 1)
 #print("Min:", data.min()) #0.0
 #print("Max:", data.max()) #5.0
-#print("Unique values:", np.unique(data)) #Unique values: [0. 1. 2. 3. 4. 5.]
