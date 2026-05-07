@@ -9,7 +9,7 @@ Box plots and Mann Whitney test comparing the selected Pannuke and Conic model u
 
 #File path to spot quantification file
 file_path = "/Users/tirilkt/Documents/studie/masteroppgave/spatial-data/conic/Figures/Func116SpotQuantification1.xlsx" #Pannuke vs conic
-df = pd.read_excel(file_path)
+df = pd.read_excel(file_path) #Read file
 
 #Comparing neoplastic, epithelial and connective cell types
 pannuke_neo = df['PanNuke model2 Neoplastic'].dropna() 
@@ -17,7 +17,8 @@ pannuke_con = df['PanNuke model2 Connective'].dropna()
 conic_epi = df['Conic 20x Epithelial'].dropna()
 conic_con = df['Conic 20x Connective'].dropna() 
 
-stat_con, p_con = mannwhitneyu(pannuke_con, conic_con, alternative='two-sided') #Mann Whitney test
+#Mann Whitney test
+stat_con, p_con = mannwhitneyu(pannuke_con, conic_con, alternative='two-sided') 
 stat_mal, p_mal = mannwhitneyu(pannuke_neo, conic_epi, alternative='two-sided')
 print(f"PanNuke connective and CoNIC connective: U Statistics = {stat_con:.2f}, P Value = {p_con:.4f}") 
 print(f"PanNuke neoplastic and CoNIC epithelial: U Statistics = {stat_mal:.2f}, P Value = {p_mal:.4f}") 

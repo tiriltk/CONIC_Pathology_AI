@@ -4,8 +4,7 @@ from scipy.stats import pearsonr
 import seaborn as sns
 
 """
-Pearson correlation and scatter plots comparing cell estimates.
-Using spot quantification file with model estimates and SpaCET data.
+Pearson correlation and scatter plots comparing cell estimates using spot quantification file with model estimates and SpaCET data.
 """
 
 #File paths to spot quantification file
@@ -15,7 +14,7 @@ df = pd.read_excel(file_path) #Read file
 
 def pearson(x_data, y_data): #Function for pearson correlation analysis
     estimates = df[[x_data, y_data]].dropna() #Remove NaN values
-    pearson_corr, p_value = pearsonr(estimates[x_data], estimates[y_data])
+    pearson_corr, p_value = pearsonr(estimates[x_data], estimates[y_data]) #Correlation coefficient and p value
     print(f"Pearson correlation (r) {x_data} and {y_data}: {pearson_corr:.3f}")
     print(f"Pearson p-value ({x_data} and {y_data}): {p_value:.3e}")
 

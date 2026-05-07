@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
 
 """
-Box plots and Mann Whitney test for comparing cell counts in patches for Pannuke Model 1 and 2.
+Box plots and Mann Whitney test for comparing cell counts in patches for PanNuke Model 1 and 2.
 """
 
-#Path to csv file that contains the cell counts
+#Paths to CSV file that contains the cell counts
 #Model 1 20x
 csv_04320_first = '/Volumes/Expansion/biopsy_results/pannuke/20x/datafiles_output_20x_best/Func043_ST_HE_20x_BF_01/counts/nuclei_counts_from_0_to_323.csv'
 csv_04420_first = '/Volumes/Expansion/biopsy_results/pannuke/20x/datafiles_output_20x_best/Func044_ST_HE_20x_BF_01/counts/nuclei_counts_from_0_to_323.csv'
@@ -32,7 +32,7 @@ csv_04440_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_outp
 csv_05040_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_second_old/Func050_ST_HE_40x_BF_01/counts/nuclei_counts_combined.csv'
 csv_11640_second = '/Volumes/Expansion/biopsy_results/pannuke/40x/datafiles_output_40x_second_old/Func116_ST_HE_40x_BF_01/counts/nuclei_counts_combined.csv'
 
-#Pannuke cell types
+#PanNuke cell types
 pannuke_types = ['neoplastic', 'inflammatory', 'connective', 'dead', 'epithelial']
 
 #Unfiltered, contains patches with zero counts because there are no cells in some patches and no cells outside the tissue
@@ -42,17 +42,18 @@ model2_unfiltered = pd.read_csv(csv_05040_second)
 plot_data = []
 
 for cell_type in pannuke_types:
-    #Mask to include patches where at least one of the models detects cells
-    mask = (model1_unfiltered[cell_type] > 0) | (model2_unfiltered[cell_type] > 0) #true if one of the models or both have cell count over zero
-    model1_filtered = model1_unfiltered[mask]
+    #Mask (boolean) to include patches where at least one of the models have cell count over zero for the cell type
+    mask = (model1_unfiltered[cell_type] > 0) | (model2_unfiltered[cell_type] > 0)
+    model1_filtered = model1_unfiltered[mask] #Apply mask on data
     model2_filtered = model2_unfiltered[mask]
-
     print(f"{cell_type}: n = {len(model1_filtered)} patches")
     print(f"{cell_type}: n = {len(model2_filtered)} patches")
 
-    stat, p = mannwhitneyu(model1_filtered[cell_type], model2_filtered[cell_type], alternative='two-sided') #Mann Whitney test
+    #Mann Whitney test
+    stat, p = mannwhitneyu(model1_filtered[cell_type], model2_filtered[cell_type], alternative='two-sided')
     print(f"{cell_type}: U Statistics = {stat:.2f}, P Value = {p:.4f}")
 
+    #Data for plotting
     plot_data.append(pd.DataFrame({"Value": model1_filtered[cell_type].values, "Cell type": cell_type, "Model": "Model 1"}))
     plot_data.append(pd.DataFrame({"Value": model2_filtered[cell_type].values, "Cell type": cell_type, "Model": "Model 2"}))
 
