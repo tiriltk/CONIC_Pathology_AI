@@ -122,7 +122,7 @@ def draw_dilation(img, instance_mask, instance_type, label_colors, nuclei_marker
             dilation = cv2.dilate(binary_map, kernal, iterations=1) #dilation expands boundary
 
             #borders have value 255 (white) and background 0 (black)
-            border_map = (dilation == 255) & (binary_map == 0)  #border pixels: background pixel with dilation
+            border_map = (dilation == 255) & (binary_map == 0)  #border pixels are dilated pixels and not in original instance
             border_idx = np.where(border_map)
             #inst_pixels_dilated = np.where((dilation == [255, 255, 255]).all(axis=2))
             instance_tp = np.unique(instance_type[indexes])

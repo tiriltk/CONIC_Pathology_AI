@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """
-Apply co-registration on type map following Matlab code and using functions from image_co_registration.py script.
-Have co-registered the sample and use the same transformation on the type map.
+Apply co-registration on type map following Matlab code.
+Using the same functions as in image_co_registration.py script.
 """
 
 #File paths
@@ -15,7 +15,7 @@ path_matrix = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/Fun
 dir_save = "/Volumes/Expansion/biopsy_results/pannuke/40x/co_registration/" #Saving directory
 os.makedirs(dir_save, exist_ok=True)
 
-#Functions copied from image_co_registation.py:
+#Functions copied from image_co_registration.py:
 #Compute scaling factors
 def compute_scale_factor(fixed_image, moving_image): 
     height_fixed, width_fixed = fixed_image.shape[:2]
@@ -29,7 +29,7 @@ def manual_rotation_translation(image, angle, tx, ty):
     height, width = image.shape[:2] #Get image dimensions
 
     center = (width // 2, height // 2) #Center coordinates 
-    rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0) #Rotation matrix, selected rotation angle in degrees where positive angle is counter clockwise
+    rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0) #Rotation matrix with selected rotation angle in degrees where positive angle is counter clockwise
     rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height)) #Apply rotation with warpAffine function
 
     translation_matrix = np.float32([[1, 0, tx],[0, 1, ty]]) #Translation matrix
@@ -43,17 +43,17 @@ def apply_registration(visium_image_path, affine_matrix_path, type_map_path):
     type_map = cv2.imread(type_map_path) ##Load type_map bgr
     type_map_rgb = cv2.cvtColor(type_map, cv2.COLOR_BGR2RGB)
 
-    scaleW, scaleH = compute_scale_factor(visium_rgb, type_map_rgb) #Scale
-    type_map_resized = cv2.resize(type_map_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST) #using nearest, best for type maps
+    scaleW, scaleH = compute_scale_factor(visium_rgb, type_map_rgb) #Compute scaling factors
+    type_map_resized = cv2.resize(type_map_rgb, None, fx=scaleW, fy=scaleH, interpolation=cv2.INTER_NEAREST) #Nearest interpolartion best for type maps
 
-    #Manual rotation and translation Func116 manual parameters: Rotate 8 degrees, move -100 pixels in x, move 0 pixels in y
+    #Func116 manual parameters: Rotate 8 degrees, move -100 pixels in x, move 0 pixels in y
     type_map_manual_aligned = manual_rotation_translation(type_map_resized, 8, -100, 0)
 
     matrix_full = np.load(affine_matrix_path) #Load stored affine matrix 3x3
     matrix = matrix_full[:2, :] #2x3 required by warpAffine
     height_f, width_f = visium_rgb.shape[:2] 
     output_dimensions = (width_f, height_f) #Dimensions for the output image
-    transformed_type_map = cv2.warpAffine(type_map_manual_aligned, matrix, output_dimensions, flags=cv2.INTER_NEAREST) #Apply transformation
+    transformed_type_map = cv2.warpAffine(type_map_manual_aligned, matrix, output_dimensions, flags=cv2.INTER_NEAREST) #Apply transformation to type map
 
     return visium_rgb, type_map_rgb, transformed_type_map
 
@@ -62,7 +62,7 @@ visium_rgb, type_map_original, type_map_registered = apply_registration(path_vis
 #Plot and save
 plt.imshow(visium_rgb)
 plt.imshow(type_map_registered, alpha=0.5)
-plt.title("Type map registrert")
+plt.title("Type map registered")
 
 overlay_path = os.path.join(dir_save, "Func116_typemap_registered_overlay.png") #Save overlay
 plt.savefig(overlay_path)
