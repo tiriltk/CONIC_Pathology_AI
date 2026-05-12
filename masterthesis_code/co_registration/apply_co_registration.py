@@ -26,11 +26,9 @@ def compute_scale_factor(fixed_image, moving_image):
 #Manual rotation and translation on moving image
 def manual_rotation_translation(image, angle, tx, ty):
     height, width = image.shape[:2] #Get image dimensions
-
     center = (width // 2, height // 2) #Center coordinates 
     rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0) #Rotation matrix with selected rotation angle where positive angle is counter clockwise
     rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height)) #Apply rotation with warpAffine function
-
     translation_matrix = np.float32([[1, 0, tx],[0, 1, ty]]) #Translation matrix
     manual_aligned_image = cv2.warpAffine(rotated_image, translation_matrix, (width, height)) #Apply translation 
     return manual_aligned_image
@@ -39,7 +37,7 @@ def manual_rotation_translation(image, angle, tx, ty):
 def apply_registration(visium_image_path, affine_matrix_path, type_map_path):
     visium = cv2.imread(visium_image_path) #Load fixed_image bgr
     visium_rgb = cv2.cvtColor(visium, cv2.COLOR_BGR2RGB)
-    type_map = cv2.imread(type_map_path) ##Load type_map bgr
+    type_map = cv2.imread(type_map_path) #Load type_map bgr
     type_map_rgb = cv2.cvtColor(type_map, cv2.COLOR_BGR2RGB)
 
     scaleW, scaleH = compute_scale_factor(visium_rgb, type_map_rgb) #Compute scaling factors

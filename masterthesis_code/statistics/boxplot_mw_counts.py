@@ -46,7 +46,7 @@ for cell_type in pannuke_types:
     mask = (model1_unfiltered[cell_type] > 0) | (model2_unfiltered[cell_type] > 0)
     model1_filtered = model1_unfiltered[mask] #Apply mask on data
     model2_filtered = model2_unfiltered[mask]
-    print(f"{cell_type}: n = {len(model1_filtered)} patches")
+    print(f"{cell_type}: n = {len(model1_filtered)} patches") #Print
     print(f"{cell_type}: n = {len(model2_filtered)} patches")
 
     #Mann Whitney test

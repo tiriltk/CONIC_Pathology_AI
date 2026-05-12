@@ -3,8 +3,7 @@ import cv2
 import os
 
 """
-Convert the colored border pixels from inference into a binary border map.
-The binary map is later used on the type map to separate overlapping cells.
+Convert the colored border pixels from inference into a binary border map. The binary map is later used on the type map to separate overlapping cells.
 """
 
 #File paths

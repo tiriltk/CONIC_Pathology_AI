@@ -3,7 +3,7 @@ import cv2
 import os
 
 """
-Make binary map and colored map for each cell class from the co-registered type map with border image.
+Make binary map and colored map for each cell class from the co-registered type map with borders.
 """
 
 #File paths

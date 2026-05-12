@@ -7,8 +7,7 @@ Takes the tp_results.npy file saved during model inference and colors the cell c
 The saved patches are used in TIA script to make WSI to get the whole type map. 
 """
 
-#Function to color the patches with cell class color and save the patches
-def typemap_patches(tp_results_path, output_dir, offset):
+def typemap_patches(tp_results_path, output_dir, offset): #Function to color the patches with cell class color and save the patches
     if not os.path.exists(output_dir):
         os.makedirs(output_dir) #Create output directory
 
@@ -34,9 +33,6 @@ def typemap_patches(tp_results_path, output_dir, offset):
         img = Image.fromarray(color_patch) #Convert array to image 
         img.save(os.path.join(output_dir, f"typepatch_{i+offset}.png")) #Save the colored patches
     print(f"Saved: {output_dir}")
-
-    #print("Min:", data.min()) #0.0
-    #print("Max:", data.max()) #5.0
 
 if __name__ == "__main__":
     typemap_patches(
