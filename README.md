@@ -1,3 +1,25 @@
+## Master's Thesis:
+# AI-based Image Analysis of Tumour Biopsies from Prostate Cancer Patients
+
+### The HoVer-Net Method for Segmentation and Classification of Cell Nuclei
+
+The repository is based on the original: "Keep It Accurate and Robust: An Enhanced Nuclei Analysis Framework" by Zhang et al.
+
+Based on the repositories: 
+- https://github.com/WinnieLaugh/CONIC_Pathology_AI
+- https://github.com/jmfinsru/CONIC_Pathology_AI
+
+This version has been a part of a Master's Thesis at the University of Oslo.
+
+### Thesis Information:
+- Author: Tiril Kopland Trondsen    
+- University of Oslo  
+- Department of Physics
+- Faculty of Mathematics and Natural Sciences
+- Biological and Medical Physics
+- Spring 2026
+
+## Original repository README:
 # Keep It Accurate and Robust: An Enhanced Nuclei Analysis Framework.
 
 # Team Pathology_AI in CONIC 2022! We win the first prize in the second task: Prediction of cellular composition, and the third prize in the first task: Nuclear segmentation and classification!
