@@ -3,13 +3,13 @@
 
 ### The HoVer-Net Method for Segmentation and Classification of Cell Nuclei
 
-The repository is based on the original: "Keep It Accurate and Robust: An Enhanced Nuclei Analysis Framework" by Zhang et al.
+This repository is based on the original: "Keep It Accurate and Robust: An Enhanced Nuclei Analysis Framework" by Zhang et al.
 
-Based on the repositories: 
+From the repositories: 
 - https://github.com/WinnieLaugh/CONIC_Pathology_AI
 - https://github.com/jmfinsru/CONIC_Pathology_AI
 
-This version has been a part of a Master's Thesis at the University of Oslo.
+This version has been a part of a Master's Thesis project at the University of Oslo.
 
 ### Thesis Information:
 - Author: Tiril Kopland Trondsen    

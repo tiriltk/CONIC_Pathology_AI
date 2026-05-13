@@ -59,6 +59,6 @@ plt.imshow(type_map_registered, alpha=0.5)
 plt.title("Type map registered")
 plt.show()
 
-registered_path = os.path.join(dir_save, "Func116_typemap_registered.png") #Save co registered result
-cv2.imwrite(registered_path, cv2.cvtColor(type_map_registered, cv2.COLOR_RGB2BGR))
+registered_path = os.path.join(dir_save, "Func116_typemap_registered.png") 
+cv2.imwrite(registered_path, cv2.cvtColor(type_map_registered, cv2.COLOR_RGB2BGR)) #Save co registered result
 print("Saved:", registered_path)

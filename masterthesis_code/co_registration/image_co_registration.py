@@ -91,7 +91,7 @@ plt.show()
 plt.imsave(os.path.join(save_dir, "Func116_overlay_manual.png"), overlay_manual) #Save overlays
 plt.imsave(os.path.join(save_dir, "Func116_overlay_fine.png"), overlay_fine)
 np.save(os.path.join(save_dir, "Func116_affine_transform.npy"), affine_matrix) #Save affine transform matrix
-manual_aligned_path = os.path.join(save_dir, "Func116_manual_aligned.png") #Save manual aligned image
-cv2.imwrite(manual_aligned_path, cv2.cvtColor(manual_aligned_image, cv2.COLOR_RGB2BGR))
-registered_path = os.path.join(save_dir, "Func116_co_registered.png") #Save final co registered image
-cv2.imwrite(registered_path, cv2.cvtColor(moving_fine_registered, cv2.COLOR_RGB2BGR))
+manual_aligned_path = os.path.join(save_dir, "Func116_manual_aligned.png") 
+cv2.imwrite(manual_aligned_path, cv2.cvtColor(manual_aligned_image, cv2.COLOR_RGB2BGR)) #Save manual aligned image
+registered_path = os.path.join(save_dir, "Func116_co_registered.png") 
+cv2.imwrite(registered_path, cv2.cvtColor(moving_fine_registered, cv2.COLOR_RGB2BGR)) #Save final co registered image
